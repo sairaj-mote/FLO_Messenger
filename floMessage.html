@@ -3,7 +3,11 @@
 
 <head>
   <title>FLO Message App</title>
-
+<style>
+    .conversationBox{
+        display: none;
+    }
+</style>
 <script id="floGlobals">
   /* Constants for FLO blockchain operations !!Make sure to add this at begining!! */
   const floGlobals = {
@@ -30,13 +34,46 @@
     }
   }
 </script>
+<script id="onLoadStartUp">
+    function onLoadStartUp() {
 
+        //floDapps.addStartUpFunction('Sample', Promised Function)
+        //floDapps.setAppObjectStores({sampleObs1:{}, sampleObs2:{options{autoIncrement:true, keyPath:'SampleKey'}, Indexes:{sampleIndex:{}}}})
+        //floDapps.setCustomPrivKeyInput( () => { FUNCTION BODY *must return private key* } )
+
+        floDapps.launchStartUp().then(result => {
+            console.log(result)
+            alert(`Welcome FLO_ID: ${myFloID}`)
+            if(!floGlobals.settings.lastReceived)
+                floGlobals.settings.lastReceived='0'
+            
+            floMessage.loadMessages().then(data => {
+                renderMessages(data)
+                document.getElementById("refreshBtn").click()
+            }).catch(error => console.error(error))
+        }).catch(error => console.error(error))
+    }
+</script>
 </head>
 
 <body onload="onLoadStartUp()">
     FLO Message App
-  (use console)
-
+    <div>
+        <div class="leftPanel">
+            <div class="panelHead">Contacts <button id="addNewBtn">+</button><button id="refreshBtn">↺</button></div>
+            <div id="contactList"></div>
+        </div>
+        
+        <div class="rightPanel">
+            <div id="conversationHead" class="panelHead"></div>
+            <div id="conversationContainer"></div>
+            <div class="inputContainer">
+                <input type="text" id="inputText"/>
+                <button id="sendEncryptedBtn">&#10148;(encrypted)</button>
+                <button id="sendUnencryptedBtn">&#10147;(unencrypted)</button>
+            </div>
+        </div>
+    </div>
 <script id="init_lib">
     //All util libraries required for Standard operations (DO NOT EDIT ANY)
 
@@ -8526,20 +8563,6 @@ Bitcoin.Util = {
     reactor.registerEvent("startUpErrorLog");
     reactor.addEventListener("startUpErrorLog", log => console.error(log))
 </script>
-<script id="onLoadStartUp">
-    function onLoadStartUp() {
-
-        //floDapps.addStartUpFunction('Sample', Promised Function)
-        //floDapps.setAppObjectStores({sampleObs1:{}, sampleObs2:{options{autoIncrement:true, keyPath:'SampleKey'}, Indexes:{sampleIndex:{}}}})
-        //floDapps.setCustomPrivKeyInput( () => { FUNCTION BODY *must return private key* } )
-
-        floDapps.launchStartUp().then(result => {
-            console.log(result)
-            alert(`Welcome FLO_ID: ${myFloID}`)
-            //App functions....
-        }).catch(error => console.error(error))
-    }
-</script>
 
 <script id="floMessage">
     const floMessage = {
@@ -8679,6 +8702,101 @@ Bitcoin.Util = {
         }
     }
 </script>
+<script id="UI">
+    function renderMessages(data, init = false) {
+        for (m in data) {
+            let conversationBox = document.getElementsByName(data[m].floID)[1]
+            //create conversationBox for new contacts
+            if (!conversationBox) {
+                let contact = document.createElement("button")
+                contact.setAttribute("name", data[m].floID)
+                contact.setAttribute("class", "contacts")
+                contact.textContent = data[m].floID
+                contact.onclick = () => viewConversation(data[m].floID)
+                document.getElementById("contactList").appendChild(contact)
 
+                conversationBox = document.createElement("div")
+                conversationBox.setAttribute("name", data[m].floID)
+                conversationBox.setAttribute("class", "conversationBox")
+                document.getElementById("conversationContainer").appendChild(conversationBox)
+            }
+            if (!init && document.getElementById("conversationHead").textContent != data[m].floID && data[m].type ==
+                "R")
+                document.getElementsByName(data[m].floID)[0].classList.add("unreadNotification");
+
+            let msgBox = document.createElement("div")
+            let messageHolder = document.createElement("span")
+            let timeHolder = document.createElement("span")
+            messageHolder.textContent = data[m].message
+            timeHolder.textContent = data[m].time
+            msgBox.classList.add("msgBox");
+            msgBox.classList.add(data[m].type);
+            msgBox.appendChild(messageHolder)
+            msgBox.appendChild(timeHolder)
+            conversationBox.appendChild(msgBox)
+        }
+    }
+
+    document.getElementById("sendEncryptedBtn").addEventListener("click", () => {
+        let inputText = document.getElementById("inputText")
+        let message = inputText.value
+        inputText.value = ""
+        let receiver = document.getElementById("conversationHead").textContent
+        console.log(message, receiver)
+        floMessage.sendEncrypted(message, receiver)
+            .then(data => renderMessages({
+                [data.time]: data
+            }))
+            .catch(error => console.error(error))
+    })
+
+    document.getElementById("sendUnencryptedBtn").addEventListener("click", () => {
+        let inputText = document.getElementById("inputText")
+        let message = inputText.value
+        inputText.value = ""
+        let receiver = document.getElementById("conversationHead").textContent
+        console.log(message, receiver)
+        floMessage.sendUnencrypted(message, receiver)
+            .then(data => renderMessages({
+                [data.time]: data
+            }))
+            .catch(error => console.error(error))
+    })
+
+    document.getElementById("addNewBtn").addEventListener("click", () => {
+        let floID = prompt("Enter FLO ID")
+        if (floID && floCrypto.validateAddr(floID)) {
+            let contact = document.createElement("button")
+            contact.setAttribute("name", floID)
+            contact.setAttribute("class", "contacts")
+            contact.textContent = floID
+            contact.onclick = () => viewConversation(floID)
+            document.getElementById("contactList").appendChild(contact)
+
+            let conversationBox = document.createElement("div")
+            conversationBox.setAttribute("name", floID)
+            conversationBox.setAttribute("class", "conversationBox")
+            document.getElementById("conversationContainer").appendChild(conversationBox)
+
+        }
+    })
+
+    document.getElementById("refreshBtn").addEventListener("click", () => {
+        floMessage.refreshInbox()
+            .then(result => renderMessages(result))
+            .catch(error => console.error(error))
+    })
+
+    function viewConversation(floID) {
+        let currentConversation = document.getElementById("conversationHead").textContent
+        if (currentConversation != "") {
+            document.getElementsByName(currentConversation)[0].disabled = false
+            document.getElementsByName(currentConversation)[1].style.display = "none"
+        }
+        document.getElementsByName(floID)[0].disabled = true
+        document.getElementsByName(floID)[1].style.display = "block"
+        document.getElementById("conversationHead").textContent = floID
+    }
+</script>
 </body>
 </html>
