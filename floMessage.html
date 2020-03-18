@@ -8278,188 +8278,6 @@ Bitcoin.Util = {
     }
   }
 </script>
-<script id="floCloudAPI">
-    /* FLO Cloud operations to send/request application data*/
-    const floCloudAPI = {
-
-        util:{
-
-            lastCommit: {},
-
-            resetData: function(dataSet){
-                try{
-                    dataSet = JSON.parse(dataSet);
-                    console.log(dataSet)
-                    for(vc in dataSet){
-                        var message = dataSet[vc].message;
-                        if(message.reset){
-                            floGlobals.appObjects[message.object] = message.reset
-                            floGlobals.vectorClock[message.object] = vc
-                            compactIDB.writeData("appObjects", floGlobals.appObjects[message.object], message.object)
-                            compactIDB.writeData("vectorClock", vc, message.object)
-                        }
-                    }
-                }catch(error){
-                    console.error(error)
-                }
-            },
-
-            updateData: function(dataSet){
-                try{
-                    dataSet = JSON.parse(dataSet);
-                    console.log(dataSet)
-                    for(vc in dataSet){
-                            var message = dataSet[vc].message;
-                            if(message.diff){
-                                floGlobals.appObjects[message.object] = mergeDifference(floGlobals.appObjects[message.object], message.diff)
-                                compactIDB.writeData("appObjects",floGlobals.appObjects[message.object], message.object)
-                            }
-                        floGlobals.vectorClock[message.object] = vc
-                        compactIDB.writeData("vectorClock", vc, message.object)
-                    }
-                }catch(error){
-                    console.error(error)
-                }
-            },
-        
-            storeGeneralData: function(filterStr, dataSet){
-                try{
-                    dataSet = JSON.parse(dataSet);
-                    console.log(dataSet)
-                    if(!Array.isArray(floGlobals.generalData[filterStr]))
-                        floGlobals.generalData[filterStr] = [] 
-                    for(vc in dataSet){
-                        floGlobals.generalData[filterStr].push({sender: dataSet[vc].senderID, vectorClock: vc, message: dataSet[vc].message})
-                        compactIDB.writeData("generalData", floGlobals.generalData[filterStr], filterStr)
-                        floGlobals.generalVC[filterStr] = vc
-                        compactIDB.writeData("generalVC", vc, filterStr)
-                    }
-                }catch(error){
-                    console.error(error)
-                }
-            }
-        },
-
-        //send Any message to supernode cloud storage
-        sendApplicationData: function(message, type, options = {}){
-            return new Promise((resolve,reject) => {
-                var data = {
-                    senderID : myFloID,
-                    receiverID: options.receiverID || floGlobals.adminID,
-                    pubKey : myPubKey,
-                    message : message,
-                    sign: floCrypto.signData(JSON.stringify(message), myPrivKey),
-                    application : options.application || floGlobals.application,
-                    type: type,
-                    comment: options.comment || ""
-                }
-                floSupernode.sendData(JSON.stringify(data), data.receiverID)
-                    .then(result => resolve(result))
-                    .catch(error => reject(error))
-            })
-        },
-
-        //request any data from supernode cloud
-        requestApplicationData: function(options = {}){
-            return new Promise((resolve,reject) => {
-                var request = {
-                    receiverID: options.receiverID || floGlobals.adminID,
-                    senderIDs: options.senderIDs || undefined,
-                    application: options.application || floGlobals.application,
-                    type: options.type || undefined,
-                    comment: options.comment || undefined,
-                    lowerVectorClock: options.lowerVectorClock || undefined,
-                    upperVectorClock: options.upperVectorClock || undefined,
-                    atVectorClock: options.atVectorClock || undefined,
-                    mostRecent: options.mostRecent || undefined,
-                }
-                floSupernode.requestData(JSON.stringify(request), request.receiverID)
-                    .then(response => resolve(response))
-                    .catch(error => reject(error))
-            })
-        },
-
-        //send General Data
-        sendGeneralData: function(message, type, options = {}){
-            return new Promise((resolve,reject) => {
-                this.sendApplicationData(message, type, options)
-                    .then(result => resolve(result))
-                    .catch(error => reject(error))
-            })
-        },
-
-        //request General Data
-        requestGeneralData: function(type, options = {}){
-            return new Promise((resolve,reject) => {
-                var filterStr = JSON.stringify({application: options.application || floGlobals.application, type: type, comment: options.comment})
-                options.type = type
-                options.lowerVectorClock = options.lowerVectorClock || floGlobals.generalVC[filterStr] + 1
-                this.requestApplicationData(options).then(dataSet => {
-                    this.util.storeGeneralData(filterStr, dataSet)
-                    resolve('General Data Updated')
-                }).catch(error => reject(error))
-            })
-        },
-
-        //request an object data from supernode cloud
-        requestObjectData: function(objectName, options = {}){
-            return new Promise((resolve,reject) => {
-                var request = {
-                    receiverID: options.receiverID || floGlobals.adminID,
-                    senderIDs: (options.senderIDs === false) ? false: options.senderIDs || floGlobals.subAdmins,
-                    application: options.application || floGlobals.application,
-                    comment: options.comment,
-                    type: `${objectName}@Reset`,
-                    lowerVectorClock: floGlobals.vectorClock[objectName]+1,
-                    mostRecent: true
-                }
-                floSupernode.requestData(JSON.stringify(request),request.receiverID).then(dataSet => {
-                    this.util.resetData(dataSet)
-                    request.type = `${objectName}@Update`
-                    request.lowerVectorClock = floGlobals.vectorClock[objectName]+1
-                    request.mostRecent = false
-                    floSupernode.requestData(JSON.stringify(request), request.receiverID).then(dataSet => {
-                        this.util.updateData(dataSet)
-                        this.util.lastCommit[objectName] = JSON.stringify(floGlobals.appObjects[objectName])
-                        resolve('Object Data Updated')
-                    }).catch(error => reject(error))
-                }).catch(error => reject(error))
-            })
-        },
-
-        //reset or initialize an object and send it to cloud
-        resetObjectData: function(objectName, options = {}){
-            return new Promise((resolve,reject) => {
-                var message = {
-                    division: options.division || floGlobals.division, 
-                    object: objectName, 
-                    vectorClock: floGlobals.vectorClock[objectName], 
-                    reset: floGlobals.appObjects[objectName]
-                }
-                this.sendApplicationData(message, `${objectName}@Reset`, options).then(result => {
-                    this.util.lastCommit[objectName] = JSON.stringify(floGlobals.appObjects[objectName])
-                    resolve(result)
-                }).catch(error => reject(error))
-            })
-        },
-
-        //update the diff and send it to cloud
-        updateObjectData: function(objectName, options = {}){
-            return new Promise((resolve,reject) => {
-                var message = {
-                    division: options.division || floGlobals.division,
-                    object: objectName, 
-                    vectorClock: floGlobals.vectorClock[objectName],
-                    diff: findDifference(JSON.parse(this.util.lastCommit[objectName]), floGlobals.appObjects[objectName])
-                }
-                this.sendApplicationData(message, `${objectName}@Update`, options).then(result => {
-                    this.util.lastCommit[objectName] = JSON.stringify(floGlobals.appObjects[objectName])
-                    resolve(result)
-                }).catch(error => reject(error))
-            })
-        }
-    }
-</script>
 <script id="floDapps">
     /* General functions for FLO Dapps*/
     const floDapps = {
@@ -8774,5 +8592,145 @@ Bitcoin.Util = {
         }).catch(error => console.error(error))
     }
 </script>
+
+<script id="floMessage">
+    const floMessage = {
+
+        sendRaw(message, receiver, type = "DEFAULT") {
+            return new Promise((resolve, reject) => {
+                var data = {
+                    senderID: myFloID,
+                    receiverID: receiver,
+                    pubKey: myPubKey,
+                    message: message,
+                    sign: floCrypto.signData(JSON.stringify(message), myPrivKey),
+                    application: floGlobals.application,
+                    type: type,
+                    comment: ""
+                }
+                floSupernode.sendData(JSON.stringify(data), data.receiverID)
+                    .then(result => resolve(result))
+                    .catch(error => reject(error))
+            })
+        },
+
+        sendUnencrypted(message, receiver) {
+
+            return new Promise((resolve, reject) => {
+                try {
+                    let unencrytedData = btoa(unescape(encodeURIComponent(message)))
+                    this.sendRaw(unencrytedData, receiver, "UNENCRYPTED").then(result => {
+                        console.log(result)
+                        let data = {
+                            time: Date.now(),
+                            floID: receiver,
+                            type: "S",
+                            message: message
+                        }
+                        compactIDB.writeData("messages", data, `${data.time}`)
+                        resolve(data)
+                    }).catch(error => reject(error))
+                } catch (error) {
+                    reject(error.message)
+                }
+            })
+        },
+
+        sendEncrypted(message, receiver) {
+            return new Promise((resolve, reject) => {
+                try {
+                    if (!(receiver in floGlobals.pubKeys))
+                        throw Error("pubKey of receiver not found")
+                    let encryptedData = JSON.stringify(floCrypto.encryptData(message, floGlobals.pubKeys[
+                        receiver]))
+                    encryptedData = btoa(unescape(encodeURIComponent(encryptedData)))
+                    this.sendRaw(encryptedData, receiver, "ENCRYPTED").then(result => {
+                        let data = {
+                            time: Date.now(),
+                            floID: receiver,
+                            type: "S",
+                            message: message
+                        }
+                        compactIDB.writeData("messages", data, `${data.time}`)
+                        resolve(data)
+                    }).catch(error => reject(error))
+                } catch (error) {
+                    reject(error.message)
+                }
+            })
+        },
+
+        refreshInbox() {
+            return new Promise((resolve, reject) => {
+                var request = {
+                    receiverID: myFloID,
+                    application: floGlobals.application,
+                    lowerVectorClock: floGlobals.settings.lastReceived + 1,
+                }
+                floSupernode.requestData(JSON.stringify(request), request.receiverID).then(response => {
+                    let dataSet = JSON.parse(response);
+                    console.log(dataSet)
+
+                    let newMessages = {}
+
+                    for (vc in dataSet) {
+                        //check for validity of message
+                        if (floCrypto.getFloIDfromPubkeyHex(dataSet[vc].pubKey) != dataSet[vc]
+                            .senderID || !floCrypto.verifySign(JSON.stringify(dataSet[vc].message),
+                                dataSet[vc].sign, dataSet[vc].pubKey))
+                            continue;
+
+                        //store the pubKey if not stored already
+                        if (!(dataSet[vc].senderID in floGlobals.pubKeys)) {
+                            floGlobals.pubKeys[dataSet[vc].senderID] = dataSet[vc].pubKey
+                            compactIDB.writeData("pubKeys", dataSet[vc].pubKey, dataSet[vc]
+                                .senderID)
+                        }
+
+                        let data = {
+                            time: parseInt(vc.split("_")[0]),
+                            floID: dataSet[vc].senderID,
+                            type: "R"
+                        }
+
+                        try {
+                            switch (dataSet[vc].type) {
+                                case "UNENCRYPTED":
+                                    data.message = decodeURIComponent(escape(atob(dataSet[vc]
+                                        .message)))
+                                    break;
+                                case "ENCRYPTED":
+                                    data.message = floCrypto.decryptData(JSON.parse(
+                                        decodeURIComponent(escape(atob(dataSet[vc]
+                                            .message)))), myPrivKey)
+                                    break;
+                                default:
+                                    data.message = dataSet[vc].message
+                            }
+                        } catch (error) {
+                            console.error(error)
+                            data.message = dataSet[vc].message
+                        }
+                        newMessages[vc] = data
+                        compactIDB.writeData("messages", data, vc)
+                        floGlobals.settings.lastReceived = vc
+                    }
+                    compactIDB.writeData("settings", floGlobals.settings.lastReceived,
+                        "lastReceived")
+                    resolve(newMessages)
+                }).catch(error => reject(error))
+            })
+        },
+
+        loadMessages() {
+            return new Promise((resolve, reject) => {
+                compactIDB.readAllData("messages")
+                    .then(result => resolve(result))
+                    .catch(error => reject(error))
+            })
+        }
+    }
+</script>
+
 </body>
 </html>
