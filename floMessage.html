@@ -2,7 +2,7 @@
 <html>
 
 <head>
-  <title>FLO Standard Operators</title>
+  <title>FLO Message App</title>
 
 <script id="floGlobals">
   /* Constants for FLO blockchain operations !!Make sure to add this at begining!! */
@@ -17,27 +17,24 @@
       FLO_TEST: ['https://testnet-flosight.duckdns.org/', 'https://testnet.flocha.in/']
     },
     adminID: "FKAEdnPfjXLHSYwrXQu377ugN4tXU7VGdf",
-    sendAmt: 0.001,
-    fee: 0.0005,
 
     //Required for Supernode operations
     SNStorageID: "FEzk75EGMPEQMrCuPosGiwuK162hcEu49E",
     supernodes: {}, //each supnernode must be stored as floID : {uri:<uri>,pubKey:<publicKey>}
 
-    //for cloud apps
-    subAdmins: [],
-    application: "TEST_MODE",
-    vectorClock: {},
-    appObjects: {},
-    generalData: {},
-    generalVC: {}
+    //for app
+    application: "floMessage",
+    pubKeys: {},
+    settings: {
+        lastReceived: '0'
+    }
   }
 </script>
 
 </head>
 
 <body onload="onLoadStartUp()">
-    TEST_MODE
+    FLO Message App
   (use console)
 
 <script id="init_lib">
