@@ -2,7 +2,7 @@
 <html>
 
 <head>
-  <title>FLO Message App</title>
+  <title>FLO Messenger</title>
 <style>
     .conversationBox{
         display: none;
@@ -20,14 +20,13 @@
       FLO: ['https://explorer.mediciland.com/', 'https://livenet.flocha.in/', 'https://flosight.duckdns.org/', 'http://livenet-explorer.floexperiments.com/'],
       FLO_TEST: ['https://testnet-flosight.duckdns.org/', 'https://testnet.flocha.in/']
     },
-    adminID: "FKAEdnPfjXLHSYwrXQu377ugN4tXU7VGdf",
 
     //Required for Supernode operations
     SNStorageID: "FEzk75EGMPEQMrCuPosGiwuK162hcEu49E",
     supernodes: {}, //each supnernode must be stored as floID : {uri:<uri>,pubKey:<publicKey>}
 
     //for app
-    application: "floMessage",
+    application: "Messenger",
     pubKeys: {},
     settings: {
         lastReceived: '0'
@@ -7542,7 +7541,7 @@ Bitcoin.Util = {
         const nodeIdNewInt8Array = new Uint8Array(nodeIdBytes);
         return nodeIdNewInt8Array;
       },
-      launch: function (superNodeList = Object.keys(floGlobals.supernodes), master_floID = floGlobals.adminID) {
+      launch: function (superNodeList = Object.keys(floGlobals.supernodes), master_floID = floGlobals.SNStorageID) {
         return new Promise((resolve, reject) => {
           try {
             const SuKBucketId = this.floIdToKbucketId(master_floID);
