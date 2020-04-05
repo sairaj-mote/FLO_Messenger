@@ -2,12 +2,659 @@
 <html>
 
 <head>
-  <title>FLO Messenger</title>
-<style>
-    .conversationBox{
-        display: none;
-    }
-</style>
+    <title>FLO Messenger</title>
+    <style>
+
+        /* Root */
+
+        :root {
+            --accent-light: #AFD0EF;
+            --accent-color: #398AD7;
+            --accent-dark: #2F66A9;
+            --alt-light: #F9FAFA;
+            --alt-color: #ECEFF1;
+            --alt-dark: #828C92;
+            --default-text: #313233;
+            --header: linear-gradient(150deg, rgba(47, 102, 169, 1) 0%, rgba(47, 102, 169, 1) 9%, rgba(57, 138, 215, 1) 9%, rgba(57, 138, 215, 1) 20%, rgba(47, 102, 169, 1) 20%, rgba(47, 102, 169, 1) 100%);
+            --background: linear-gradient(148deg, rgba(236, 239, 241, 1) 0%, rgba(236, 239, 241, 1) 20%, rgba(210, 217, 223, 1) 25%, rgba(236, 239, 241, 1) 30%, rgba(236, 239, 241, 1) 70%, rgba(210, 217, 223, 1) 75%, rgba(236, 239, 241, 1) 80%, rgba(236, 239, 241, 1) 100%);
+            --foreground: #fff;
+            --rgb-bw: 24, 25, 25;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Roboto', sans-serif;
+            scrollbar-color: rgba(var(--rgb-bw), 0.1) rgba(var(--rgb-bw), 0.0);
+            scrollbar-width: thin;
+        }
+
+        /* ScrollBar */
+        ::-webkit-scrollbar {
+            width: 0.1rem;
+            height: 0.2rem;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(var(--rgb-bw), 0.0);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(var(--rgb-bw), 0.2);
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(var(--rgb-bw), 0.3);
+        }
+
+        /* Body Elements */
+
+        body {
+            margin: 0;
+            font-size: 16px;
+            color: var(--default-text);
+            background: var(--background);
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }
+
+        button, input[type="button"], input[type="submit"], input[type="reset"]{
+            cursor: pointer;
+        }
+       
+        button:hover,
+        button:focus {
+            outline: 0;
+            transform: scale(1.025);
+        }
+
+        button:active {
+            transform: translateY(0.01rem);
+        }
+
+        .hide {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .no-transformations {
+            transform: none !important;
+        }
+
+        /* Hover text */
+
+        [data-title] {
+            position: relative;
+            z-index: 3;
+        }
+
+        [data-title]:hover::before {
+            content: attr(data-title);
+            position: absolute;
+            bottom: -26px;
+            display: inline-block;
+            padding: 3px 6px;
+            border-radius: 2px;
+            background: var(--alt-dark);
+            color: var(--alt-color);
+            font-size: 12px;
+            font-family: sans-serif;
+            font-weight: normal;
+            font-style: normal;
+            white-space: nowrap;
+            z-index: 5;
+        }
+
+        [data-title]:hover::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 8px;
+            display: inline-block;
+            color: var(--alt-color);
+            border: 8px solid transparent;
+            border-bottom: 8px solid var(--alt-dark);
+            z-index: 5;
+        }
+
+        /* Loading screen */
+
+        #loading-screen {
+            width: 100%;
+            height: 100%;
+            top: 0;
+            position: fixed;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--accent-color);
+            z-index: 4;
+        }
+
+        #loading-screen .appName {
+            top: 8rem;
+            position: fixed;
+            display: flex;
+            z-index: 5;
+        }
+
+        #startup-load-msg {
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            text-align: right;
+            font-size: 0.75rem;
+        }
+
+        #startup-load-msg .success-log {
+            color: white;
+        }
+
+        #startup-load-msg .error-log {
+            color: red;
+        }
+
+        #sign-in-box {
+            height: 25rem;
+            width: 25rem;
+            background: rgba(var(--rgb-bw), 1);
+            z-index: inherit;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 1rem;
+        }
+
+        #sign-in-box div {
+            text-align: center;
+        }
+
+        #sign-in-box span {
+            color: var(--alt-color);
+            font: italic bold 1.5rem Georgia, serif;
+        }
+
+        #sign-in-box input,
+        #sign-in-box button {
+            margin: 1rem;
+            padding: 0.5rem;
+            background: rgba(var(--rgb-bw), 0.5);
+            border: 0.1rem solid;
+            outline: none;
+            border-radius: 0.2rem;
+            font-size: 1.3rem;
+            color: transparent;
+
+        }
+
+        #sign-in-box input,
+        #sign-in-box button:first-child {
+            text-shadow: 0 0 0 var(--accent-dark);
+            border-color: var(--accent-dark);
+        }
+
+        #sign-in-box input {
+            height: 2.5rem;
+            width: 20rem;
+        }
+
+        #sign-in-box input:focus {
+            box-shadow: -0.1rem -0.1rem var(--accent-dark)
+        }
+
+        #sign-in-box button {
+            height: 5rem;
+            width: 9rem;
+        }
+
+        #sign-in-box button:last-child {
+            text-shadow: 0 0 0 var(--alt-dark);
+            border-color: var(--alt-dark);
+        }
+
+        .loader {
+            display: inline-block;
+            position: absolute;
+            width: 80px;
+            height: 80px;
+        }
+
+        .loader div {
+            position: absolute;
+            border: 4px solid #fff;
+            opacity: 1;
+            border-radius: 50%;
+            animation: loader 1s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+        }
+
+        .loader div:nth-child(2) {
+            animation-delay: -0.5s;
+        }
+
+        @keyframes loader {
+            0% {
+                top: 36px;
+                left: 36px;
+                width: 0;
+                height: 0;
+                opacity: 1;
+            }
+
+            100% {
+                top: 0px;
+                left: 0px;
+                width: 72px;
+                height: 72px;
+                opacity: 0;
+            }
+        }
+
+        /* Header */
+
+        header {
+            position: relative;
+            background: var(--header);
+            display: flex;
+            align-items: center;
+            z-index: 4;
+            padding: 0.2rem 1em;
+        }
+
+        .appName h1 {
+            margin: 1rem 0 0 1rem;
+            padding: 0;
+            color: var(--alt-color);
+            font: italic bold 3rem/1rem Georgia, serif;
+            text-shadow: -2.5px 2.5px rgba(var(--rgb-bw), 0.5);
+        }
+
+        .appName h2 {
+            margin-bottom: 0;
+            padding: 0;
+            color: var(--alt-color);
+            font: italic bold 1.5rem Georgia, serif;
+            text-shadow: -2.5px 2.5px rgba(var(--rgb-bw), 0.5);
+        }
+
+        header span {
+            color: var(--alt-color);
+            right: 10rem;
+            position: absolute;
+            font: italic normal 0.9rem Georgia, serif;
+        }
+
+        header button {
+            color: var(--alt-color);
+            background: var(--accent-dark);
+            border: 1px solid var(--alt-color);
+            border-radius: 0.25em;
+            position: absolute;
+            right: 1em;
+            font-size: 1.1rem;
+            font-weight: bold;
+            width: 7rem;
+        }
+
+        header button:hover,
+        header button:focus {
+            background: var(--alt-color);
+            color: var(--accent-dark);
+        }
+
+        /* Popups */
+        
+        .popup-overlay {
+            width: 100%;
+            height: 100%;
+            top: 0;
+            position: fixed;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(var(--rgb-bw), 0.1);
+            z-index: 4;
+        }
+
+        .popup-container {
+            background: var(--foreground);
+            border-radius: 0.4rem;
+        }
+
+        .popup-overlay form fieldset {
+            margin: 0.5rem;
+            padding: 0.25rem;
+            color: var(--alt-dark);
+            border-style: solid;
+            border-color: var(--alt-dark);
+            border-radius: 0.5rem;
+            font-style: italic;
+            font-size: 0.8rem;
+        }
+
+        .popup-overlay form fieldset div {
+            font-style: normal;
+            font-weight: bold;
+        }
+
+        #confirmation div {
+            text-align: center;
+        }
+
+        #show-message{
+            transform: translate(0.4rem, 0);
+            transition: transform 0.3s ease, opacity 1s ease;
+            box-shadow: 0.2rem 0.4rem 0.8rem rgba(var(--rgb-bw), 0.16);
+            align-items: center;
+            display: flex;
+            color: var(--alt-color);
+            position: fixed;
+            margin: 1rem;
+            width: max-content;
+            border-radius: 0.2rem;
+            bottom: 0;
+            right: 0;
+            z-index: 5;
+        }
+
+        #show-message span{
+            font-weight: 500;
+            margin: 0.5rem;
+            flex: 1;
+        }
+
+        #show-message button {
+            margin: 0.5rem;
+            border: none;
+            color: var(--alt-color);
+            background: rgba(var(--rgb-bw), 0);
+        }
+
+        #show-message button:hover {
+            color: rgba(var(--rgb-bw), 0.2);
+        }
+
+        /* Section */
+
+        section {
+            width: 100%;
+            justify-content: center;
+            display: flex;
+        }
+
+        section>div{
+            margin-top: 2rem;
+            width: 60rem;
+            height: 30rem;
+            display: flex;
+        }
+
+        #leftPanel {
+            background: var(--foreground);
+            display: inline-block;
+            height: 30rem;
+            width: 20rem;
+            border-right: 0.4rem solid var(--accent-color);
+            margin: 0;
+        }
+
+        #rightPanel {
+            margin: 0;
+            display: inline-block;
+            height: 30rem;
+            width: 40rem;
+        }
+
+        /* Contact List */
+
+        .list-header {
+            font-weight: bold;
+            cursor: default;
+            padding: 0.5rem 1rem;
+            font-size: 1.1rem;
+        }
+
+        .list-header span {
+            color: transparent;
+            text-shadow: 0 0 0 var(--default-text);
+        }
+
+        .list-header button {
+            float: right;
+            border: none;
+            border-radius: 0.2rem;
+            color: inherit;
+            background: rgba(var(--rgb-bw), 0);
+            font-size: 1rem;
+        }
+
+        .list-header button:hover,
+        .list-header button:focus {
+            background: rgba(var(--rgb-bw), 0.1);
+        }
+
+        #contact-list {
+            height: 27rem;
+            overflow-y: scroll;
+        }
+
+        .contact-card {
+            padding: 1rem;
+            background: rgba(var(--rgb-bw), 0);
+        }
+
+        .unread span:nth-child(3){
+            border-right: 0.1rem dashed var(--accent-dark);
+        }
+
+        .contact-card:hover {
+            background: var(--alt-color);
+        }
+
+        .contact-card span{
+            padding: 0.3rem 0.5rem;
+        }
+
+        .contact-card span:nth-child(1) {
+            border-radius: 0.5rem;
+            background-color: var(--accent-dark);
+            color: var(--alt-color);
+        }
+
+        .contact-card span:nth-child(2) {
+            font-style: italic;
+        }
+
+        .contact-card span:nth-child(3) {
+            display: block;
+            padding: 0;
+            margin-top:0.5rem;
+            font-weight: bold;
+            font-size: 0.7rem;
+        }
+
+        /* Conversations */
+
+        #conversation-head {
+            height: 3rem;
+            background: var(--accent-color);
+            border-radius: 0rem 0.4rem 0 0;
+            color: var(--alt-color);
+        }
+
+        #conversation-body {
+            height: 24rem;
+            background: var(--foreground);
+            overflow: scroll;
+        }
+
+        #conversation-foot {
+            height: 3rem;
+            background: var(--alt-light);
+            border-radius: 0 0 0.4rem 0rem;
+            color: var(--alt-dark);
+        }
+
+        /* Conversation Head*/
+
+        #conversation-head div{
+            display: inline-block;
+            padding: 0.3rem;
+        }
+
+        #conversation-head span:nth-child(1){
+            margin: 0.2rem;
+            font-size: 1.1rem;
+            font-weight: bold;
+            display: block;
+        }
+
+        #conversation-head span:nth-child(2){
+            margin-left: 0.2rem;
+            font-size: 0.7rem;
+            font-style: italic;
+            display: block;
+        }
+
+        #conversation-head button{
+            margin: 0.5rem;
+            height: 2rem;
+            width:2rem;
+            float: right;
+            background: var(--alt-color);
+            color: var(--accent-color);
+            font-size: 1.25rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 0.2rem;
+        }
+
+        #conversation-head button:hover, #conversation-head button:focus{
+            color: var(--accent-dark);
+        }
+
+        /* Conversation Body*/
+
+        #conversation-body>div{
+            display: none;
+        }
+
+        .message-container {
+            overflow: hidden;
+            width: 100%;
+            padding: 0.5rem;
+        }
+
+        .message-container div{
+            padding: 0.4rem 0.4rem 0.2rem 0.4rem;
+        }
+
+        .message-received{
+            float: left;
+            text-align: left;
+            background: var(--accent-light);
+            border-radius: 0 0.4rem 0.4rem 0.4rem;
+        }
+        
+        .message-sent{
+            float: right;
+            text-align: right;
+            background: var(--alt-color);
+            border-radius: 0.4rem 0.4rem 0 0.4rem;
+        }
+
+        .message-container span{
+            display: block;
+        }
+
+        .message-container span:nth-child(1){
+            font-size: 0.9rem;
+        }
+
+        .message-container span:nth-child(2){
+            font-size: 0.7rem;
+            font-style: italic;
+            text-align: right;
+        }
+
+        /* Inputs */
+
+        .input-container {
+            margin: 0.5rem;
+            align-items: center;
+        }
+
+        .input-container input {
+            height: 2rem;
+            border-radius: 0.2rem;
+            border: 0.1rem solid rgba(var(--rgb-bw), 0.2);
+            padding: 0.2rem;
+        }
+
+        .input-container input[type="submit"] {
+            background: var(--accent-color);
+            color: var(--alt-color);
+        }
+
+        .input-container input[type="reset"] {
+            background: var(--alt-color);
+            color: var(--alt-dark);
+        }
+
+        .input-container input[type="submit"]:hover {
+            background: var(--accent-dark)
+        }
+
+        .input-container input[type="reset"]:hover {
+            background: var(--alt-dark);
+            color: var(--alt-color);
+        }
+
+        .i-1 input{
+            width: 18rem;
+        }
+
+        .i-2 input{
+            width: 8.5rem;
+        }
+
+        .asterisk-notation {
+            color: red;
+            font-size: 0.5rem;
+            display: block;
+            font-weight: normal;
+            font-style: italic;
+            margin: 0.5rem;
+        }
+
+        /* Conversation Foot*/
+
+        #conversation-foot .asterisk-notation{
+            margin: 0 1rem;
+            float: right;
+        }
+
+        #conversation-foot .input-container{
+            margin: 0 0.5rem;
+            padding-top: 0.5rem;
+        }
+
+        #conversation-foot input[type="text"]{
+            width:35rem;
+            margin-left: 0.5rem;
+        }
+
+        #conversation-foot button{
+            height: 2rem;
+            width:2rem;
+            border: none;
+            background: rgba(var(--rgb-bw), 0);
+            color: var(--alt-dark)
+        }
+
+        #conversation-foot button:hover, #conversation-foot button:focus{
+            background: rgba(var(--rgb-bw), 0.1);
+        }
+    </style>
+
 <script id="floGlobals">
   /* Constants for FLO blockchain operations !!Make sure to add this at begining!! */
   const floGlobals = {
@@ -26,7 +673,7 @@
     supernodes: {}, //each supnernode must be stored as floID : {uri:<uri>,pubKey:<publicKey>}
 
     //for app
-    application: "Messenger",
+    application: "messenger",
     pubKeys: {},
     settings: {
         lastReceived: '0'
@@ -35,44 +682,374 @@
 </script>
 <script id="onLoadStartUp">
     function onLoadStartUp() {
-
-        //floDapps.addStartUpFunction('Sample', Promised Function)
-        //floDapps.setAppObjectStores({sampleObs1:{}, sampleObs2:{options{autoIncrement:true, keyPath:'SampleKey'}, Indexes:{sampleIndex:{}}}})
-        //floDapps.setCustomPrivKeyInput( () => { FUNCTION BODY *must return private key* } )
-
+        //display loading screen
+        document.getElementById("loading-screen").classList.remove("hide")
+        //clear Rendered Elements
+        clearElement(document.getElementById("startup-load-msg"))
+        clearElement(document.getElementById('contact-list'))
+        clearElement(document.getElementById('conversation-body'))
+        clearElement(document.getElementById('conversation-head').children[0].children[0])
+        clearElement(document.getElementById('conversation-head').children[0].children[1])
+        //set the custom Privkey input
+        floDapps.setCustomPrivKeyInput(() => {
+            return new Promise((resolve, reject) => {
+                let signInBox = document.getElementById("sign-in-box")
+                signInBox.classList.remove('hide')
+                let buttons = signInBox.getElementsByTagName('button');
+                buttons[0].onclick = () => {
+                    let keyInput = signInBox.getElementsByTagName('input')[0];
+                    let key = keyInput.value;
+                    keyInput.value = '';
+                    buttons[0].onclick = null;
+                    buttons[1].onclick = null;
+                    signInBox.classList.add('hide')
+                    resolve(key)
+                }
+                buttons[1].onclick = () => {
+                    signInBox.getElementsByTagName('input')[0].value = '';
+                    buttons[0].onclick = null;
+                    buttons[1].onclick = null;
+                    signInBox.classList.add('hide')
+                    reject(null)
+                }
+            })
+        })
+        //invoke the startup functions
         floDapps.launchStartUp().then(result => {
             console.log(result)
-            alert(`Welcome FLO_ID: ${myFloID}`)
+            document.getElementById("greet-tag").textContent = `Hi, ${myFloID}`
+            showMessage("SignIn Successful")
+            //Default setting
             if(!floGlobals.settings.lastReceived)
-                floGlobals.settings.lastReceived='0'
+                floGlobals.settings.lastReceived='0';
             
-            floMessage.loadMessages().then(data => {
-                renderMessages(data)
-                document.getElementById("refreshBtn").click()
-            }).catch(error => console.error(error))
-        }).catch(error => console.error(error))
+            //load messages from IDB and render them
+            reactor.dispatchEvent("startUpSuccessLog", `Loading contacts! Please Wait...`)
+            messenger.loadContacts().then(contacts => {
+                renderContactList(contacts)
+                reactor.dispatchEvent("startUpSuccessLog", `Contacts loaded successful`)
+                reactor.dispatchEvent("startUpSuccessLog", `Loading messages! Please Wait...`)
+                messenger.loadMessages().then(data => {
+                    renderMessages(data, true)
+                    reactor.dispatchEvent("startUpSuccessLog", `Messages loaded successful`)
+                    //hide loading screen
+                    document.getElementById("loading-screen").classList.add("hide")
+                    document.getElementById("refresh-inbox").click()
+                }).catch(error => {
+                    reactor.dispatchEvent("startUpErrorLog", `Failed to load messages`)
+                    showMessage(error, "error")
+                })
+            }).catch(error => {
+                reactor.dispatchEvent("startUpErrorLog", `Failed to load contacts`)
+                showMessage(error, "error")
+            })
+        }).catch(error => showMessage(error, "error"))
     }
 </script>
 </head>
 
-<body onload="onLoadStartUp()">
-    FLO Message App
-    <div>
-        <div class="leftPanel">
-            <div class="panelHead">Contacts <button id="addNewBtn">+</button><button id="refreshBtn">↺</button></div>
-            <div id="contactList"></div>
+<body onload="onLoadStartUp();">
+
+    <header class="appName">
+        <h1>M</h1>
+        <h2>essenger</h2>
+        <span id="greet-tag">
+        </span>
+        <button id="sign-out">
+            &#x219A; Sign Out
+        </button>
+    </header>
+
+    <div id="loading-screen" class="hide">
+        <div class="appName">
+            <h1>M</h1>
+            <h2>essenger</h2>
         </div>
-        
-        <div class="rightPanel">
-            <div id="conversationHead" class="panelHead"></div>
-            <div id="conversationContainer"></div>
-            <div class="inputContainer">
-                <input type="text" id="inputText"/>
-                <button id="sendEncryptedBtn">&#10148;(encrypted)</button>
-                <button id="sendUnencryptedBtn">&#10147;(unencrypted)</button>
+        <div class="loader"><div></div><div></div></div>
+        <div id="sign-in-box" class="hide">
+            <div>
+                <div>
+                    <span>SIGN IN</span>
+                </div>
+                <div><input type="password"></div>
+                <div><button>&#x1F511; Sign In</button><button>&#x1F464; Guest</button></div>
+            </div>
+        </div>
+        <div id="startup-load-msg"></div>  
+    </div>
+
+    <div class="popup-overlay hide">
+        <div id="confirmation" class="popup-container">
+            <div class="input-container i-1"></div>
+            <div class="input-container i-2">
+                <input type="submit" value="Ok" />
+                <input type="reset" value="Cancel" />
             </div>
         </div>
     </div>
+
+    <div class="popup-overlay hide">
+        <form id="add-contact-form" class="popup-container" onsubmit="addContact(); return false;">
+            <fieldset>
+                <legend>Add Contact </legend>
+                <div class="input-container i-1"><input type="text" name="floID" placeholder="FLO ID"
+                        autocomplete="off" required /></div>
+                <div class="input-container i-1"><input type="text" name="name" placeholder="Name" autocomplete="off"
+                        required /></div>
+                <div class="input-container i-2">
+                    <input type="submit" value="Add" />
+                    <input type="reset" value="Reset" />
+                </div>
+            </fieldset>
+        </form>
+    </div>
+
+    <div id="show-message" class="hide">
+        <span>Message</span>
+        <button> &#x2716;</span>
+    </div>
+
+    <section>
+        <div>
+            <div id="leftPanel">
+                <div class="list-header">
+                    <span>&#x1F465; &nbsp;Contacts</span>
+                    <button data-title="Add Contact" id="add-contact"> &#x271A;</button>
+                </div>
+                <div id="contact-list"></div>
+            </div>
+            <div id="rightPanel">
+                <div id="conversation-head">
+                    <div>
+                        <span></span>
+                        <span></span>
+                    </div>
+                    <button id="refresh-inbox" data-title="Refresh Inbox">&#x21BB;</button>
+                </div>
+                <div id="conversation-body"></div>
+                <div id="conversation-foot">
+                    <form class="input-container" id="send-message" onsubmit="sendMessage(); return false;">
+                        <input type="text" name="message" placeholder="Type a message..." autocomplete="off"/>
+                        <button type="submit" data-title="Send">&#x27A4;</button>
+                    </form>
+                    <span class="asterisk-notation hide" id="warn-no-encryption">*Sending messages not encrypted for this user!</span>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <script id="UI">
+
+        document.onclick = (e) => {
+            try {
+                if (e.target.classList.contains("popup-overlay"))
+                    e.target.classList.add("hide")
+                else if (e.target.classList.contains("contact-card"))
+                    viewConversation(e.target)
+                else if (e.target.parentNode.classList.contains("contact-card"))
+                    viewConversation(e.target.parentNode)
+            } catch (error) {
+                console.log(error)
+            }
+        };
+
+        document.getElementById("sign-out").addEventListener('click', function (e) {
+            getConfirmation('Signing out will delete all stored! Are you sure you want to Sign out?').then(result => {
+                floDapps.logout().then(result => {
+                    showMessage("Successfully Signed out")
+                    setTimeout(onLoadStartUp, 2000)
+                }).catch(error => showMessage(error, "error"))
+            })
+        });
+
+        document.getElementById('show-message').children[1].addEventListener("click", function (e) {
+            this.parentNode.classList.add('hide')
+            this.parentNode.classList.remove('no-transformations')
+        })
+
+        document.getElementById('add-contact').addEventListener("click", function (e) {
+            document.getElementById("add-contact-form").parentNode.classList.remove('hide')
+        })
+
+        document.getElementById('refresh-inbox').addEventListener("click", function (e) {
+            messenger.refreshInbox().then(data => {
+                renderMessages(data)
+                showMessage(`${Object.keys(data).length} New Messages`)
+            }).catch(error => showMessage(error, "error"))
+        })
+
+        function sendMessage() {
+            let receiver = document.getElementById("conversation-head").children[0].children[1].textContent;
+            let message = document.forms["send-message"]["message"].value;
+            console.log(message, receiver)
+            let sendProcess;
+            if(floGlobals.pubKeys[receiver])
+                sendProcess = messenger.sendEncrypted(message, receiver);
+            else
+                sendProcess = messenger.sendUnencrypted(message, receiver);
+            sendProcess.then(data => {
+                renderMessageBox(data.floID, data.message, data.time, data.category);
+                document.forms["send-message"].reset();
+            }).catch(error => showMessage(error, "error"));
+        }
+        
+        function removeElement(element) {
+            element.parentNode.removeChild(element);
+        }
+
+        function clearElement(element) {
+            element.innerHTML = '';
+            return element;
+        }
+
+        function getConfirmation(message) {
+            let confirmation = document.getElementById("confirmation");
+            confirmation.children[0].textContent = message;
+            confirmation.parentNode.classList.remove("hide")
+            return new Promise((resolve, reject) => {
+                let interval = setInterval(() => {
+                    if (confirmation.parentNode.classList.contains("hide")) {
+                        confirmation.children[1].children[0].onclick = null;
+                        confirmation.children[1].children[1].onclick = null;
+                        clearInterval(interval);
+                        reject(false);
+                    }
+                }, 1000)
+                confirmation.children[1].children[0].onclick = () => {
+                    clearInterval(interval);
+                    confirmation.parentNode.classList.add("hide")
+                    resolve(true)
+                }
+                confirmation.children[1].children[1].onclick = () => {
+                    clearInterval(interval);
+                    confirmation.parentNode.classList.add("hide")
+                    reject(true)
+                }
+            })
+        }
+
+        function showMessage(message, mode = "normal", fixed = false) {
+            if (mode === "error")
+                console.error(message)
+            else if (mode === "warn")
+                console.warn(message)
+            else
+                console.log(mode.toUpperCase(), message)
+            let bg = {
+                normal: '#00C853',
+                error: '#D32F2F',
+                warn: '#FFCC00',
+                cool: '#08B6CE'
+            }
+            let banner = document.getElementById('show-message')
+            clearTimeout(this.currentTimeout)
+            banner.classList.add('hide');
+            banner.classList.remove('no-transformations');
+            setTimeout(() => {
+                banner.style.background = bg[mode];
+                banner.children[0].textContent = message;
+                banner.classList.add('no-transformations');
+                banner.classList.remove('hide');
+                if (!fixed)
+                    this.currentTimeout = setTimeout(() => banner.children[1].click(), 4000)
+            }, 500)
+        }
+
+        function addContact() {
+            try {
+                let form = document.forms["add-contact-form"]
+                let floID = form.floID.value.trim();
+                let name = form.name.value.trim();
+                messenger.storeContact(floID, name)
+                renderContactCard(floID, name)
+                form.reset()
+                showMessage(`Added Contact: ${floID}`)
+            } catch (error) {
+                showMessage(error, "error")
+            }
+        }
+       
+        function renderContactCard(floID, name) {
+            let newCard = document.createElement("div");
+            newCard.classList.add("contact-card");
+            newCard.setAttribute("name", floID)
+            let initalTag = document.createElement("span");
+            initalTag.textContent = name.charAt(0)
+            newCard.appendChild(initalTag);
+            let nameTag = document.createElement("span");
+            nameTag.textContent = name
+            newCard.appendChild(nameTag);
+            let idTag = document.createElement("span");
+            idTag.textContent = floID;
+            newCard.appendChild(idTag);
+            document.getElementById("contact-list").appendChild(newCard);
+        }
+
+        function renderContactList(contactList = {}) {
+            for (floID in contactList){
+                renderContactCard(floID, contactList[floID])
+                let element = document.createElement("div");
+                element.setAttribute("id", floID)
+                document.getElementById("conversation-body").appendChild(element)
+            }
+        }
+
+        function renderMessageBox(floID, message, time, category){
+            let msgBox = document.createElement("div");
+            msgBox.setAttribute("class", "message-container")
+            let msgBubble = document.createElement("div")
+            msgBubble.setAttribute("class", `message-${category}`)
+            let msgTag = document.createElement("span")
+            msgTag.textContent = message;
+            msgBubble.appendChild(msgTag);
+            let timeTag = document.createElement("span")
+            time = Date(time).toString()
+            timeTag.textContent = `${time.slice(4, 10)} | ${time.slice(16, 21)}`;
+            msgBubble.appendChild(timeTag);
+            msgBox.appendChild(msgBubble);
+            getConversationElement(floID).appendChild(msgBox)
+        }
+
+        function getConversationElement(floID){
+            let element = document.getElementById(floID)
+            if(!element){
+                element = document.createElement("div");
+                element.setAttribute("id", floID)
+                document.getElementById("conversation-body").appendChild(element)
+                renderContactCard(floID, '#null')
+            }
+            return element;
+        }
+
+        function renderMessages(data, init = false){
+            for(m in data){
+                renderMessageBox(data[m].floID, data[m].message, data[m].time, data[m].category)
+                if(!init)
+                    document.getElementsByName(data[m].floID)[0].classList.add("unread");
+            }
+        }
+
+        function viewConversation(card) {
+            let floID = card.children[2].textContent;
+            let name = card.children[1].textContent;
+            card.classList.remove("unread");
+            let currentConversation = document.getElementById("conversation-head").children[0].children[1].textContent;
+            console.log(floID, name, currentConversation)
+            if (currentConversation != "")
+                document.getElementById(currentConversation).style.display = "none";
+            document.getElementById(floID).style.display = "block";
+            var convHeader = document.getElementById("conversation-head");
+            convHeader.children[0].children[0].textContent = name;
+            convHeader.children[0].children[1].textContent = floID;
+            if(floGlobals.pubKeys[floID])
+                document.getElementById("warn-no-encryption").classList.add("hide");
+            else
+                document.getElementById("warn-no-encryption").classList.remove("hide");
+        }
+
+    </script>
+
 <script id="init_lib">
     //All util libraries required for Standard operations (DO NOT EDIT ANY)
 
@@ -8314,7 +9291,7 @@ Bitcoin.Util = {
     }
   }
 </script>
-<script id="floDapps_customized_for_floMessage">
+<script id="floDapps_customized_for_messenger">
     /* General functions for FLO Dapps*/
     const floDapps = {
 
@@ -8337,8 +9314,10 @@ Bitcoin.Util = {
                         credentials: {},
                         //for apps
                         pubKeys: {},
+                        contacts: {}, 
                         settings: {},
-                        messages: {}
+                        messages: {},
+                        mail: {}
                     }
                     compactIDB.initDB(floGlobals.application, obj).then(result => {
                         resolve("IndexedDB App Storage Initated Successfully")
@@ -8548,23 +9527,32 @@ Bitcoin.Util = {
                     console.log(result)
                     localStorage.removeItem(`${floGlobals.application}#privKey`)
                     resolve("Logout Sucessful")
-                }).catch(error => {
-                    console.error(error)
-                    reject("Logout Unsucessful")
-                })
+                }).catch(error => reject(error))
             })
         }
     }
 
     reactor.registerEvent("startUpSuccessLog");
-    reactor.addEventListener("startUpSuccessLog", log => console.log(log))
+    reactor.addEventListener("startUpSuccessLog", log => {
+        console.log(log)
+        let element = document.createElement('div')
+        element.setAttribute("class", "success-log")
+        element.textContent = log
+        document.getElementById("startup-load-msg").appendChild(element)
+    })
 
     reactor.registerEvent("startUpErrorLog");
-    reactor.addEventListener("startUpErrorLog", log => console.error(log))
+    reactor.addEventListener("startUpErrorLog", log => {
+        console.error(log)
+        let element = document.createElement('div')
+        element.setAttribute("class", "error-log")
+        element.textContent = log
+        document.getElementById("startup-load-msg").appendChild(element)
+    })
 </script>
 
-<script id="floMessage">
-    const floMessage = {
+<script id="messenger">
+    const messenger = {
 
         sendRaw(message, receiver, type = "DEFAULT") {
             return new Promise((resolve, reject) => {
@@ -8594,7 +9582,7 @@ Bitcoin.Util = {
                         let data = {
                             time: Date.now(),
                             floID: receiver,
-                            type: "S",
+                            category: "sent",
                             message: message
                         }
                         compactIDB.writeData("messages", data, `${data.time}`)
@@ -8618,7 +9606,7 @@ Bitcoin.Util = {
                         let data = {
                             time: Date.now(),
                             floID: receiver,
-                            type: "S",
+                            category: "sent",
                             message: message
                         }
                         compactIDB.writeData("messages", data, `${data.time}`)
@@ -8660,7 +9648,7 @@ Bitcoin.Util = {
                         let data = {
                             time: parseInt(vc.split("_")[0]),
                             floID: dataSet[vc].senderID,
-                            type: "R"
+                            category: "received"
                         }
 
                         try {
@@ -8692,6 +9680,18 @@ Bitcoin.Util = {
             })
         },
 
+        storeContact(floID, name){
+            compactIDB.writeData("contacts", name, floID)
+        },
+
+        loadContacts() {
+            return new Promise((resolve, reject) => {
+                compactIDB.readAllData("contacts")
+                    .then(result => resolve(result))
+                    .catch(error => reject(error))
+            })
+        },
+        
         loadMessages() {
             return new Promise((resolve, reject) => {
                 compactIDB.readAllData("messages")
@@ -8699,102 +9699,6 @@ Bitcoin.Util = {
                     .catch(error => reject(error))
             })
         }
-    }
-</script>
-<script id="UI">
-    function renderMessages(data, init = false) {
-        for (m in data) {
-            let conversationBox = document.getElementsByName(data[m].floID)[1]
-            //create conversationBox for new contacts
-            if (!conversationBox) {
-                let contact = document.createElement("button")
-                contact.setAttribute("name", data[m].floID)
-                contact.setAttribute("class", "contacts")
-                contact.textContent = data[m].floID
-                contact.onclick = () => viewConversation(data[m].floID)
-                document.getElementById("contactList").appendChild(contact)
-
-                conversationBox = document.createElement("div")
-                conversationBox.setAttribute("name", data[m].floID)
-                conversationBox.setAttribute("class", "conversationBox")
-                document.getElementById("conversationContainer").appendChild(conversationBox)
-            }
-            if (!init && document.getElementById("conversationHead").textContent != data[m].floID && data[m].type ==
-                "R")
-                document.getElementsByName(data[m].floID)[0].classList.add("unreadNotification");
-
-            let msgBox = document.createElement("div")
-            let messageHolder = document.createElement("span")
-            let timeHolder = document.createElement("span")
-            messageHolder.textContent = data[m].message
-            timeHolder.textContent = data[m].time
-            msgBox.classList.add("msgBox");
-            msgBox.classList.add(data[m].type);
-            msgBox.appendChild(messageHolder)
-            msgBox.appendChild(timeHolder)
-            conversationBox.appendChild(msgBox)
-        }
-    }
-
-    document.getElementById("sendEncryptedBtn").addEventListener("click", () => {
-        let inputText = document.getElementById("inputText")
-        let message = inputText.value
-        inputText.value = ""
-        let receiver = document.getElementById("conversationHead").textContent
-        console.log(message, receiver)
-        floMessage.sendEncrypted(message, receiver)
-            .then(data => renderMessages({
-                [data.time]: data
-            }))
-            .catch(error => console.error(error))
-    })
-
-    document.getElementById("sendUnencryptedBtn").addEventListener("click", () => {
-        let inputText = document.getElementById("inputText")
-        let message = inputText.value
-        inputText.value = ""
-        let receiver = document.getElementById("conversationHead").textContent
-        console.log(message, receiver)
-        floMessage.sendUnencrypted(message, receiver)
-            .then(data => renderMessages({
-                [data.time]: data
-            }))
-            .catch(error => console.error(error))
-    })
-
-    document.getElementById("addNewBtn").addEventListener("click", () => {
-        let floID = prompt("Enter FLO ID")
-        if (floID && floCrypto.validateAddr(floID)) {
-            let contact = document.createElement("button")
-            contact.setAttribute("name", floID)
-            contact.setAttribute("class", "contacts")
-            contact.textContent = floID
-            contact.onclick = () => viewConversation(floID)
-            document.getElementById("contactList").appendChild(contact)
-
-            let conversationBox = document.createElement("div")
-            conversationBox.setAttribute("name", floID)
-            conversationBox.setAttribute("class", "conversationBox")
-            document.getElementById("conversationContainer").appendChild(conversationBox)
-
-        }
-    })
-
-    document.getElementById("refreshBtn").addEventListener("click", () => {
-        floMessage.refreshInbox()
-            .then(result => renderMessages(result))
-            .catch(error => console.error(error))
-    })
-
-    function viewConversation(floID) {
-        let currentConversation = document.getElementById("conversationHead").textContent
-        if (currentConversation != "") {
-            document.getElementsByName(currentConversation)[0].disabled = false
-            document.getElementsByName(currentConversation)[1].style.display = "none"
-        }
-        document.getElementsByName(floID)[0].disabled = true
-        document.getElementsByName(floID)[1].style.display = "block"
-        document.getElementById("conversationHead").textContent = floID
     }
 </script>
 </body>
