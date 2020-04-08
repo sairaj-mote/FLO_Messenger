@@ -724,23 +724,17 @@
                 floGlobals.settings.lastReceived='0';
             
             //load messages from IDB and render them
-            reactor.dispatchEvent("startUpSuccessLog", `Loading contacts! Please Wait...`)
-            messenger.loadContacts().then(contacts => {
-                renderContactList(contacts)
-                reactor.dispatchEvent("startUpSuccessLog", `Contacts loaded successful`)
-                reactor.dispatchEvent("startUpSuccessLog", `Loading messages! Please Wait...`)
-                messenger.loadMessages().then(data => {
-                    renderMessages(data, true)
-                    reactor.dispatchEvent("startUpSuccessLog", `Messages loaded successful`)
-                    //hide loading screen
-                    document.getElementById("loading-screen").classList.add("hide")
-                    document.getElementById("refresh-inbox").click()
-                }).catch(error => {
-                    reactor.dispatchEvent("startUpErrorLog", `Failed to load messages`)
-                    showMessage(error, "error")
-                })
+            reactor.dispatchEvent("startUpSuccessLog", `Loading Data! Please Wait...`)
+            messenger.loadData().then(data => {
+                renderContactList(data.contacts)
+                renderMessages(data.messages, true)
+                renderMails(data.mails)
+                reactor.dispatchEvent("startUpSuccessLog", `Load Successful!`)
+                //hide loading screen
+                document.getElementById("loading-screen").classList.add("hide")
+                document.getElementById("refresh-inbox").click();
             }).catch(error => {
-                reactor.dispatchEvent("startUpErrorLog", `Failed to load contacts`)
+                reactor.dispatchEvent("startUpErrorLog", `Failed to load data`)
                 showMessage(error, "error")
             })
         }).catch(error => showMessage(error, "error"))
@@ -838,6 +832,34 @@
 
         </div>
     </section>
+<button onclick="backupData()">backup</button>
+<input type="file" id="fileinput"/>
+<button onclick="restoreData()">restore</button>
+    <script>
+        function backupData(){
+            messenger.backupData().then(blob => {
+                let anchor = document.createElement('a')
+                anchor.setAttribute("download", `BackupFor_${myFloID}_${Date.now()}.json`)
+                anchor.setAttribute("href", URL.createObjectURL(blob))
+                console.log(anchor);
+                document.body.appendChild(anchor);
+                anchor.click();
+                document.body.removeChild(anchor);
+            })
+        }
+        function restoreData(){
+            let file = document.getElementById("fileinput").files[0]
+            console.log(file)
+            messenger.parseBackup(file).then(result => {
+                console.log(result)
+                let c = confirm("Restore?")
+                if(c)
+                    messenger.restoreData(result)
+                        .then(result=> console.log(result))
+                        .catch(error => console.error(error))
+            })
+        }
+    </script>
 
     <script id="UI">
 
@@ -874,21 +896,16 @@
 
         document.getElementById('refresh-inbox').addEventListener("click", function (e) {
             messenger.refreshInbox().then(data => {
-                renderMessages(data)
-                showMessage(`${Object.keys(data).length} New Messages`)
+                renderMessages(data.messages)
+                renderMails(data.mails)
+                showMessage(`${Object.keys(data.messages).length} New Messages And ${Object.keys(data.mails).length} New Mails`)
             }).catch(error => showMessage(error, "error"))
         })
 
         function sendMessage() {
             let receiver = document.getElementById("conversation-head").children[0].children[1].textContent;
             let message = document.forms["send-message"]["message"].value;
-            console.log(message, receiver)
-            let sendProcess;
-            if(floGlobals.pubKeys[receiver])
-                sendProcess = messenger.sendEncrypted(message, receiver);
-            else
-                sendProcess = messenger.sendUnencrypted(message, receiver);
-            sendProcess.then(data => {
+            messenger.sendMessage(message, receiver).then(data => {
                 renderMessageBox(data.floID, data.message, data.time, data.category);
                 document.forms["send-message"].reset();
             }).catch(error => showMessage(error, "error"));
@@ -9317,7 +9334,8 @@ Bitcoin.Util = {
                         contacts: {}, 
                         settings: {},
                         messages: {},
-                        mail: {}
+                        mails: {},
+                        mailContent: {}
                     }
                     compactIDB.initDB(floGlobals.application, obj).then(result => {
                         resolve("IndexedDB App Storage Initated Successfully")
@@ -9554,31 +9572,68 @@ Bitcoin.Util = {
 <script id="messenger">
     const messenger = {
 
-        sendRaw(message, receiver, type = "DEFAULT") {
-            return new Promise((resolve, reject) => {
-                var data = {
-                    senderID: myFloID,
-                    receiverID: receiver,
-                    pubKey: myPubKey,
-                    message: message,
-                    sign: floCrypto.signData(JSON.stringify(message), myPrivKey),
-                    application: floGlobals.application,
-                    type: type,
-                    comment: ""
-                }
-                floSupernode.sendData(JSON.stringify(data), data.receiverID)
-                    .then(result => resolve(result))
-                    .catch(error => reject(error))
-            })
+        util: {
+
+            sendRaw(message, receiver, type) {
+                return new Promise((resolve, reject) => {
+                    var data = {
+                        senderID: myFloID,
+                        receiverID: receiver,
+                        pubKey: myPubKey,
+                        message: message,
+                        sign: floCrypto.signData(JSON.stringify(message), myPrivKey),
+                        application: floGlobals.application,
+                        type: type,
+                        comment: ""
+                    }
+                    floSupernode.sendData(JSON.stringify(data), data.receiverID)
+                        .then(result => resolve(result))
+                        .catch(error => reject(error))
+                })
+            },
+
+            sendEncoded(message, receiver) {
+                return new Promise((resolve, reject) => {
+                    try {
+                        let unencrytedData = btoa(unescape(encodeURIComponent(JSON.stringify(message))))
+                        this.sendRaw(unencrytedData, receiver, "ENCODED")
+                            .then(result => resolve(data))
+                            .catch(error => reject(error))
+                    } catch (error) {
+                        reject(error.message)
+                    }
+                })
+            },
+
+            sendEncrypted(message, receiver) {
+                return new Promise((resolve, reject) => {
+                    try {
+                        if (!(receiver in floGlobals.pubKeys))
+                            throw Error("pubKey of receiver not found")
+                        let encryptedData = floCrypto.encryptData(JSON.stringify(message), floGlobals
+                            .pubKeys[receiver])
+                        encryptedData = btoa(unescape(encodeURIComponent(JSON.stringify(encryptedData))))
+                        this.sendRaw(encryptedData, receiver, "ENCRYPTED")
+                            .then(result => resolve(data))
+                            .catch(error => reject(error))
+                    } catch (error) {
+                        reject(error.message)
+                    }
+                })
+            },
+
         },
 
-        sendUnencrypted(message, receiver) {
-
+        sendMessage(message, receiver) {
             return new Promise((resolve, reject) => {
-                try {
-                    let unencrytedData = btoa(unescape(encodeURIComponent(message)))
-                    this.sendRaw(unencrytedData, receiver, "UNENCRYPTED").then(result => {
-                        console.log(result)
+                receiver = receiver.trim()
+                if(floCrypto.validateAddr(receiver)) {
+                    let sendFn;
+                    if (receiver in floGlobals.pubKeys)
+                        sendFn = this.util.sendEncrypted;
+                    else
+                        sendFn = this.util.sendEncoded;
+                    sendFn(message, receiver).then(result => {
                         let data = {
                             time: Date.now(),
                             floID: receiver,
@@ -9588,33 +9643,69 @@ Bitcoin.Util = {
                         compactIDB.writeData("messages", data, `${data.time}`)
                         resolve(data)
                     }).catch(error => reject(error))
-                } catch (error) {
-                    reject(error.message)
-                }
+                } else
+                    reject("Invalid FLO ID");
             })
         },
 
-        sendEncrypted(message, receiver) {
-            return new Promise((resolve, reject) => {
-                try {
-                    if (!(receiver in floGlobals.pubKeys))
-                        throw Error("pubKey of receiver not found")
-                    let encryptedData = JSON.stringify(floCrypto.encryptData(message, floGlobals.pubKeys[
-                        receiver]))
-                    encryptedData = btoa(unescape(encodeURIComponent(encryptedData)))
-                    this.sendRaw(encryptedData, receiver, "ENCRYPTED").then(result => {
-                        let data = {
-                            time: Date.now(),
-                            floID: receiver,
-                            category: "sent",
-                            message: message
-                        }
-                        compactIDB.writeData("messages", data, `${data.time}`)
-                        resolve(data)
-                    }).catch(error => reject(error))
-                } catch (error) {
-                    reject(error.message)
+        sendMail(subject, content, receivers) {
+            return new Promise(async (resolve, reject) => {
+                receivers = [...new Set(receivers)];
+                let result = {
+                    success: {},
+                    error: {}
                 }
+                let mail = {
+                    subject: subject,
+                    content: content
+                }
+                for (let i = 0; i < receivers.length; i++) {
+                    try {
+                        let receiver = receivers[i].trim()
+                        if(!floCrypto.validateAddr(receiver))
+                            throw "Invalid FLO ID";
+                        if (receiver in floGlobals.pubKeys)
+                            result.success[receiver] = await this.util.sendEncrypted(mail, receiver);
+                        else
+                            result.success[receiver] = await this.util.sendEncoded(mail, receiver);
+                        
+                    } catch (error) {
+                        result.error[receiver] = error;
+                    }
+                }
+                let data = {
+                        time: Date.now(),
+                        floID: receiver,
+                        category: "sentTo",
+                        parentMailID: parentMailID,
+                        subject: subject
+                    }
+                compactIDB.writeData("mails", data, `${data.time}`)
+                compactIDB.writeData("mailContent", content, `${data.time}`)
+                result.data = data
+                resolve(result)
+            })
+        },
+
+        replyMail(parentMailID, subject, content, receiver) {
+            return new Promise((resolve, reject) => {
+                let mail = {
+                    parentMailID: parentMailID,
+                    subject: subject,
+                    content: content
+                }
+                this.util.sendEncrypted(mail, receiver).then(result => {
+                    let data = {
+                        time: Date.now(),
+                        floID: receiver,
+                        category: "replyTo",
+                        parentMailID: parentMailID,
+                        subject: subject
+                    }
+                    compactIDB.writeData("mails", data, `${data.time}`)
+                    compactIDB.writeData("mailContent", content, `${data.time}`)
+                    resolve(data)
+                }).catch(error => reject(error))
             })
         },
 
@@ -9629,9 +9720,14 @@ Bitcoin.Util = {
                     let dataSet = JSON.parse(response);
                     console.log(dataSet)
 
-                    let newMessages = {}
+                    let newInbox = {
+                        messages : {},
+                        mails : {}
+                    }
 
                     for (vc in dataSet) {
+                        try {
+
                         //check for validity of message
                         if (floCrypto.getFloIDfromPubkeyHex(dataSet[vc].pubKey) != dataSet[vc]
                             .senderID || !floCrypto.verifySign(JSON.stringify(dataSet[vc].message),
@@ -9648,57 +9744,148 @@ Bitcoin.Util = {
                         let data = {
                             time: parseInt(vc.split("_")[0]),
                             floID: dataSet[vc].senderID,
-                            category: "received"
                         }
 
-                        try {
+                        let tmp;
+                            
                             switch (dataSet[vc].type) {
-                                case "UNENCRYPTED":
-                                    data.message = decodeURIComponent(escape(atob(dataSet[vc]
-                                        .message)))
+                                case "ENCODED":
+                                    tmp = JSON.parse(decodeURIComponent(escape(atob(dataSet[vc].message))))
                                     break;
                                 case "ENCRYPTED":
-                                    data.message = floCrypto.decryptData(JSON.parse(
+                                    tmp = JSON.parse(floCrypto.decryptData(JSON.parse(
                                         decodeURIComponent(escape(atob(dataSet[vc]
-                                            .message)))), myPrivKey)
+                                            .message)))), myPrivKey))
                                     break;
                                 default:
-                                    data.message = dataSet[vc].message
+                                    tmp = dataSet[vc].message
                             }
+                        
+
+                        if(typeof tmp === "string"){
+                            //process as message
+                            data.category = "received"
+                            data.message = tmp;
+                            newInbox.messages[vc] = data;
+                            compactIDB.writeData("messages", data, vc)
+                        }else if(typeof tmp === "object"){
+                            //process as mail
+                            data.subject = tmp.subject;
+                            if(parentMailID in tmp){
+                                data.parentMailID = tmp.parentMailID;
+                                data.category = "replyFrom";
+                            }else
+                                data.category = "receivedFrom"
+                            newInbox.mails[vc] = data;
+                            compactIDB.writeData("mails", data, vc);
+                            compactIDB.writeData("mailContent", tmp.content, vc);
+                        }
                         } catch (error) {
                             console.error(error)
-                            data.message = dataSet[vc].message
-                        }
-                        newMessages[vc] = data
-                        compactIDB.writeData("messages", data, vc)
-                        floGlobals.settings.lastReceived = vc
+                        } finally {
+                            floGlobals.settings.lastReceived = vc;
+                        }                       
                     }
-                    compactIDB.writeData("settings", floGlobals.settings.lastReceived,
-                        "lastReceived")
-                    resolve(newMessages)
+                    compactIDB.writeData("settings", floGlobals.settings.lastReceived, "lastReceived")
+                    resolve(newInbox)
                 }).catch(error => reject(error))
             })
         },
 
-        storeContact(floID, name){
+        getMail(mailID){
+            return compactIDB.readData("mailContent", mailID);
+        },
+
+        storeContact(floID, name) {
             compactIDB.writeData("contacts", name, floID)
         },
 
-        loadContacts() {
+        loadData() {
             return new Promise((resolve, reject) => {
-                compactIDB.readAllData("contacts")
-                    .then(result => resolve(result))
-                    .catch(error => reject(error))
+                let loadData = ["contacts", "messages", "mails"]
+                let promises = []
+                for (var i = 0; i < loadData.length; i++)
+                    promises[i] = compactIDB.readAllData(loadData[i])
+                Promise.all(promises).then(results => {
+                    let result = {}
+                            for (var i = 0; i < loadData.length; i++)
+                                result[loadData[i]] = results[i]
+                            resolve(result)
+                        }).catch(error => reject(error))
+                    })
+                },
+        
+        backupData() {
+            return new Promise((resolve, reject) => {
+                let obs = ["contacts", "pubKeys", "settings", "messages", "mails", "mailContent"]
+                let promises = [];
+                obs.forEach(o => promises.push(compactIDB.readAllData(o)))
+                Promise.all(promises).then(results => {
+                    let data = {}
+                    for (let i = 0; i < obs.length; i++)
+                        data[obs[i]] = results[i]
+                    results = undefined;
+                    data = btoa(unescape(encodeURIComponent(JSON.stringify(data))))
+                    data = {
+                        floID: myFloID,
+                        pubKey: myPubKey,
+                        data: floCrypto.encryptData(data, myPubKey),
+                    }
+                    data.sign = floCrypto.signData(JSON.stringify(data.data), myPrivKey);
+                    resolve(new Blob([JSON.stringify(data)], {
+                        type: 'application/json'
+                    }));
+                }).catch(error => reject(error))
             })
         },
-        
-        loadMessages() {
+
+        parseBackup(blob) {
             return new Promise((resolve, reject) => {
-                compactIDB.readAllData("messages")
-                    .then(result => resolve(result))
-                    .catch(error => reject(error))
+                let reader = new FileReader();
+                reader.onload = evt => {
+                    var data = JSON.parse(evt.target.result);
+                    if (!floCrypto.verifySign(JSON.stringify(data.data), data.sign, data.pubKey))
+                        reject("Corrupted Backup file: Signature verification failed");
+                    else if (myFloID !== data.floID || myPubKey !== data.pubKey)
+                        reject("Invalid Backup file: Incorrect floID");
+                    else {
+                        try {
+                            data = floCrypto.decryptData(data.data, myPrivKey);
+                            try {
+                                data = JSON.parse(decodeURIComponent(escape(atob(data))));
+                                resolve(data)
+                            } catch (e) {
+                                reject("Corrupted Backup file: Parse failed");
+                            }
+                        } catch (e) {
+                            reject("Corrupted Backup file: Decryption failed");
+                        }
+                    }
+                }
+                reader.readAsText(blob);
             })
-        }
+        },
+
+        restoreData(arg) {
+            return new Promise((resolve, reject) => {
+                let parseData;
+                if (arg instanceof Blob || arg instanceof File)
+                    parseData = this.parseBackup
+                else
+                    parseData = data => new Promise((res, rej) => res(data))
+
+                parseData(arg).then(data => {
+                    let promises = [];
+                    for (obs in data)
+                        for (value in data[obs])
+                            promises.push(compactIDB.writeData(obs, data[obs][value], value));
+                    Promise.all(promises)
+                        .then(results => resolve("Restore Successful"))
+                        .catch(error => reject("Restore Failed: Unable to write to IDB"))
+                }).catch(error => reject(error))
+            })
+        },
+
     }
 </script>
 </body>
