@@ -133,9 +133,17 @@
             z-index: 4;
         }
 
+        #loading-screen .brand {
+            top: 2rem;
+            left: 2rem;
+            position: absolute;
+            z-index: 5;
+            transform: scale(1.5);
+        }
+
         #loading-screen .appName {
             top: 8rem;
-            position: fixed;
+            position: absolute;
             display: flex;
             z-index: 5;
         }
@@ -259,6 +267,40 @@
             background: var(--header);
         }
 
+        .brand {
+            margin-top: 0.5rem;
+            margin-left: 2rem;
+            display: flex;
+        }
+
+        .brand .logo {
+            background: var(--alt-color);
+            border-radius: 0.3rem;
+            padding: 0.1rem 0.1rem 0 0.2rem;
+            height: 2.5rem;
+        }
+
+        .brand .name {
+            margin-top: 0.5rem;
+            background: var(--alt-color);
+            color: var(--accent-dark);
+            text-shadow: 0px 0px rgba(var(--rgb-bw), 0.5);
+            border-radius: 0 0.2rem 0.2rem 0;
+            padding: 0.1rem 0.2rem;
+            height: 1.3rem;
+            font: bold 1rem Georgia, serif;
+        }
+
+        .brand .logo svg {
+            width: auto;
+            height: 2.5rem;
+        }
+
+        .brand .logo svg path {
+            fill: var(--accent-dark) !important;
+            stroke: var(--alt-dark);
+        }
+
         header .appName {
             padding: 0.2rem 0.5rem;
         }
@@ -367,6 +409,15 @@
             font-weight: bold;
         }
 
+        #confirmation span {
+            display: block;
+            margin: 0 1rem;
+            font-style: normal;
+            font-size: 0.9rem;
+            white-space: pre-wrap;
+            text-align: center;
+        }
+
         #confirmation div {
             text-align: center;
         }
@@ -462,14 +513,14 @@
         }
 
         #contact-list {
-            height: 29rem;
+            max-height: 29rem;
             overflow-y: scroll;
         }
 
         .contact-card {
             padding: 1rem;
             background: rgba(var(--rgb-bw), 0);
-            overflow:hidden;
+            overflow: hidden;
         }
 
         .contact-card:hover {
@@ -480,10 +531,6 @@
             padding: 0.3rem 0.5rem;
         }
 
-        .unread span:nth-child(1) {
-            background-color: var(--accent-dark);
-        }
-
         .contact-card span:nth-child(1) {
             border-radius: 0.5rem;
             background-color: var(--alt-dark);
@@ -491,7 +538,7 @@
         }
 
         .contact-card span:nth-child(2) {
-            white-space: nowrap; 
+            white-space: nowrap;
         }
 
         .contact-card span:nth-child(3) {
@@ -501,6 +548,10 @@
             font-style: italic;
             font-weight: bold;
             font-size: 0.65rem;
+        }
+
+        .contact-card.unread span:nth-child(1) {
+            background-color: var(--accent-dark) !important;
         }
 
         /* Conversations */
@@ -534,7 +585,7 @@
             font-weight: bold;
             display: block;
             white-space: nowrap;
-            overflow:hidden;
+            overflow: hidden;
         }
 
         #receiver-floID {
@@ -595,14 +646,16 @@
             align-items: center;
         }
 
-        .input-container input, .input-container textarea, .input-container button{
+        .input-container input,
+        .input-container textarea,
+        .input-container button {
             height: 2rem;
             border-radius: 0.2rem;
             border: 0.1rem solid rgba(var(--rgb-bw), 0.2);
             padding: 0.2rem;
         }
 
-        .input-container textarea{
+        .input-container textarea {
             height: 15rem;
             resize: none;
         }
@@ -677,7 +730,7 @@
         #settings-screen {
             border: 0.2rem solid var(--accent-dark);
             text-align: center;
-            width: 25rem;
+            width: 28rem;
         }
 
         #settings-screen h4 {
@@ -706,7 +759,9 @@
         }
 
         #settings-screen label,
-        #settings-screen input[type="button"] {
+        #settings-screen input[type="button"],
+        #settings-screen input[type="text"] {
+            margin: 0 0.5rem;
             font-size: 0.9rem;
             display: inline-block;
             height: 2rem;
@@ -716,6 +771,24 @@
             background: var(--foreground);
             padding: 0.5rem;
             cursor: pointer;
+        }
+
+        #settings-screen input[type="text"] {
+            width: 24rem;
+            font-size: 0.7rem;
+            text-align: center;
+            padding: 0.5rem 0.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        #settings-screen input[type="text"]::selection {
+            color: var(--accent-color);
+            background-color: transparent;
+        }
+
+        #settings-screen input[type="text"]::placeholder {
+            color: var(--accent-color);
+            font-size: 0.9rem;
         }
 
         #settings-screen label:hover,
@@ -755,6 +828,10 @@
             border-bottom: 0.1rem solid var(--alt-color);
         }
 
+        .mail-card.unread {
+            background: var(--accent-light) !important;
+        }
+
         .mail-card:hover {
             background: var(--alt-color);
         }
@@ -782,8 +859,8 @@
             font-size: 0.8rem;
             font-style: italic;
             overflow: hidden;
-            text-overflow: ellipsis; 
-            white-space: nowrap; 
+            text-overflow: ellipsis;
+            white-space: nowrap;
             margin-left: 5rem;
         }
 
@@ -795,19 +872,19 @@
         }
 
         /* Mail view */
-        #mail-view{
+        #mail-view {
             max-height: 32rem;
             width: 50rem;
             overflow-y: scroll;
             position: relative;
         }
 
-        .mail-content{
+        .mail-content {
             margin: 2rem;
             border-bottom: 0.2rem dashed var(--alt-dark);
         }
 
-        .mail-content span:nth-child(1){
+        .mail-content span:nth-child(1) {
             display: block;
             font-weight: bold;
             font-size: 1.2rem;
@@ -815,19 +892,20 @@
             margin-bottom: 0.5rem;
             color: var(--accent-dark)
         }
-        .mail-content span:nth-child(2){
+
+        .mail-content span:nth-child(2) {
             display: inline-block;
             font-size: 0.8rem;
         }
 
-        .mail-content span:nth-child(3){
+        .mail-content span:nth-child(3) {
             margin-left: 0.5rem;
             font-weight: bold;
             display: inline-block;
             font-size: 0.9rem;
         }
 
-        .mail-content span:nth-child(4){
+        .mail-content span:nth-child(4) {
             margin-left: 0.5rem;
             font-style: italic;
             display: inline-block;
@@ -835,28 +913,28 @@
             max-width: 25rem;
             max-height: 0.7rem;
             overflow: hidden;
-            text-overflow: ellipsis; 
-            white-space: nowrap; 
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
-        .mail-content span:nth-child(4):hover{
+        .mail-content span:nth-child(4):hover {
             max-height: 1.5rem;
             overflow-y: auto;
-            white-space: normal; 
+            white-space: normal;
         }
 
-        .mail-content span:nth-child(5){
-            float:right;
+        .mail-content span:nth-child(5) {
+            float: right;
             font-size: 0.8rem;
             text-align: right;
         }
 
-        .mail-content p{
+        .mail-content p {
             display: block;
             white-space: pre-wrap;
         }
 
-        #prev-mail{
+        #prev-mail {
             margin: 0.5rem 1rem;
             float: right;
             font-size: 0.8rem;
@@ -866,13 +944,13 @@
             color: var(--accent-color)
         }
 
-        #prev-mail:hover{
+        #prev-mail:hover {
             font-weight: bold;
         }
 
         /* Compose and Reply mail */
 
-        .compose-mail{
+        .compose-mail {
             width: 30rem;
             height: auto;
             border: 0.1rem solid var(--alt-dark);
@@ -880,40 +958,58 @@
             bottom: 0;
         }
 
-        #new-mail{
+        #new-mail {
             position: absolute;
             right: 0;
         }
 
-        #reply-mail{
+        #reply-mail {
             position: sticky;
         }
 
-        .compose-head{
+        .compose-head {
             background: var(--alt-dark);
-            padding:0.5rem;
-            color:var(--alt-light);
+            padding: 0.5rem;
+            color: var(--alt-light);
             cursor: pointer;
         }
 
-        .compose-body{
-            display: none;
-            background:var(--alt-light);
+        .compose-head span {
+            float: right;
+            padding: 0 0.2rem;
         }
 
-        .compose-body.active{
+        .compose-head:hover span {
+            background: rgba(var(--rgb-bw), 0.3);
+        }
+
+        .compose-head span::after {
+            content: '\1F5D6';
+        }
+
+        .compose-head.active span::after {
+            content: '\1F5D5';
+        }
+
+        .compose-body {
+            display: none;
+            background: var(--alt-light);
+        }
+
+        .compose-head.active+.compose-body {
             display: block;
         }
 
-        .compose-mail-form{
-            margin:0;
+        .compose-mail-form {
+            margin: 0;
             padding: 0.5rem;
         }
 
-        .compose-mail input, .compose-mail-form textarea{
-            margin:0.5rem;
+        .compose-mail input,
+        .compose-mail-form textarea {
+            margin: 0.5rem;
             width: 28rem;
-        }      
+        }
 
         .compose-mail button {
             margin: 0.5rem 0.5rem 0.5rem 1rem;
@@ -921,19 +1017,19 @@
             color: var(--alt-dark);
         }
 
-        .compose-mail button[type="submit"]{
+        .compose-mail button[type="submit"] {
             width: 22rem;
         }
 
-        .compose-mail button[type="reset"]{
+        .compose-mail button[type="reset"] {
             width: 3rem;
+            font-weight: bold;
         }
 
         .compose-mail button:hover,
         .compose-mail button:focus {
             background: rgba(var(--rgb-bw), 0.1);
         }
-
     </style>
 
 <script id="floGlobals">
@@ -959,16 +1055,17 @@
         application: "messenger",
         pubKeys: {},
         contacts: {},
-        lastReceived: '0'
+        appendix: {}
     }
 </script>
 <script id="onLoadStartUp">
     function onLoadStartUp() {
         //display loading screen
         document.getElementById("loading-screen").classList.remove("hide")
+        document.getElementById("sign-in-box").classList.add("hide")
         //clear Rendered Elements
         let elementsToReset = ["startup-load-msg", 'mail-list', 'contact-list', 'conversation-body',
-            'receiver-floID', 'receiver-name', "backup-info", "restore-info"
+            'receiver-floID', 'receiver-name', "backup-info"
         ]
         elementsToReset.forEach(e => clearElement(document.getElementById(e)))
         //set the custom Privkey input
@@ -1003,10 +1100,14 @@
             //load messages from IDB and render them
             reactor.dispatchEvent("startUpSuccessLog", `Loading Data! Please Wait...`)
             messenger.loadDataFromIDB().then(data => {
-                floGlobals.lastReceived = data["_lastReceived_"] || floGlobals.lastReceived;
+                floGlobals.pubKeys = data.pubKeys;
+                floGlobals.contacts = data.contacts;
+                floGlobals.settings = data.settings;
+                floGlobals.appendix = data.appendix;
                 renderContactList(floGlobals.contacts)
-                renderMessages(data.messages, true)
-                renderMailList(data.mails)
+                renderMessages(data.messages, false)
+                renderMailList(data.mails, false)
+                renderMarked(data.marked)
                 reactor.dispatchEvent("startUpSuccessLog", `Load Successful!`)
                 //hide loading screen
                 document.getElementById("loading-screen").classList.add("hide")
@@ -1020,9 +1121,21 @@
 </script>
 </head>
 
-<body onload="onLoadStartUp();">
+<body onload="onLoadStartUp()">
 
     <header>
+        <div class="brand">
+            <div class="logo">
+                <svg width="100" height="130" viewBox="0 0 100 130">
+                    <g id="layer1" transform="translate(470,140)">
+                        <path transform="translate(-350,-850)" id="path5165"
+                            d="M -166.99971,804.55875 V 484.41291 H 153.14614 473.29202 V 804.55875 1124.7046 H 153.14614 -166.99971 Z m 639.93893,0 V 484.76569 H 153.14614 -166.64693 v 319.79306 319.79305 h 319.79307 319.79308 z m -168.4514,189.02282 m 10.5778,-228.53393 m -37.9181,8.56292 z m -332.434261,52.76162 c -0.12935,-0.12935 -0.23519,-1.28253 -0.23519,-2.56262 0,-6.67058 -5.44905,-13.20481 -16.4463,-19.72158 -1.96345,-1.1635 -4.3447,-2.4643 -5.29166,-2.89067 -4.957,-2.23185 -12.62447,-6.25072 -15.28525,-8.0117 -12.030489,-7.96211 -12.658389,-16.35177 -1.98645,-26.54198 1.73209,-1.65391 4.64828,-4.43585 6.48042,-6.1821 6.95926,-6.63302 10.68624,-12.58985 11.25673,-17.99167 l 0.22355,-2.11667 -1.9948,2.35011 c -3.79112,4.46638 -7.61404,7.1861 -11.52814,8.20141 -2.21719,0.57513 -2.64903,0.29106 -3.26536,-2.14806 l -0.46168,-1.82711 -2.28178,1.4509 c -2.41829,1.5377 -6.723749,3.18611 -7.521859,2.87985 -0.26212,-0.10059 -0.6859,-1.05542 -0.94173,-2.12185 -0.25584,-1.06643 -0.57694,-2.00805 -0.71357,-2.09249 -0.13663,-0.0844 -0.87878,0.3031 -1.64922,0.8612 -1.94063,1.40579 -3.46509,2.15893 -5.81469,2.8727 -2.51574,0.76424 -2.8946,0.5237 -3.62066,-2.29869 -0.88387,-3.43588 -0.92652,-3.36547 2.03806,-3.36547 6.83587,0 13.43345,-5.38116 19.896059,-16.22778 2.20502,-3.70081 3.98333,-7.22308 3.98333,-7.88969 0,-1.65984 2.6604,-0.47757 8.74073,3.88434 0.44177,0.31692 0.84002,0.51434 0.885,0.4387 0.62242,-1.04661 2.02564,-4.11571 2.02146,-4.4213 -0.0103,-0.75676 1.09171,-0.826 2.39614,-0.15054 0.71638,0.37096 2.5618,1.54517 4.10094,2.60937 l 2.79843,1.9349 0.97993,-1.81886 c 0.53896,-1.00037 0.98623,-2.08598 0.99393,-2.41245 0.0309,-1.3126 1.35752,-1.06195 4.32379,0.81695 8.04593,5.09648 12.84596,10.33008 15.13027,16.49691 0.65604,1.77111 0.54891,7.26086 -0.18316,9.38529 -1.79642,5.21312 -4.92116,9.58274 -11.10003,15.52222 -10.2817,9.88334 -11.67023,11.50598 -12.92312,15.10198 -0.68891,1.97729 -0.66829,5.81002 0.0404,7.52091 0.62466,1.50789 2.49336,3.99328 4.16986,5.54596 2.19595,2.03378 6.9095,4.82907 13.96149,8.27964 17.53725,8.58104 24.94403,14.81547 27.39109,23.05562 0.506,1.70388 0.50176,1.87158 -0.0577,2.28064 -0.71748,0.52463 -5.11519,1.57632 -5.52706,1.32176 -0.1578,-0.0975 -0.28691,-1.24175 -0.28691,-2.54272 0,-5.44225 -3.46174,-10.63587 -10.63355,-15.95345 -4.28094,-3.17412 -6.86259,-4.60768 -19.35256,-10.74621 -8.02659,-3.94489 -13.56038,-8.39151 -15.44245,-12.40863 -0.79591,-1.6988 -0.96172,-2.53931 -0.96172,-4.87494 0,-2.42145 0.15442,-3.14785 1.08741,-5.11528 1.21505,-2.56222 3.52772,-5.46919 6.89222,-8.66337 9.99629,-9.49026 11.81397,-11.48021 14.18898,-15.53373 2.29842,-3.92278 2.87861,-5.90728 2.87861,-9.84596 0,-3.92937 -0.49788,-5.6762 -2.54551,-8.93109 -1.8328,-2.91338 -8.45442,-9.23697 -9.67231,-9.23697 -0.43533,0 -2.1296,3.4982 -1.88553,3.89311 0.11519,0.18638 1.08106,1.16322 2.14638,2.17076 4.62673,4.37576 6.94442,9.15024 6.92646,14.26857 -0.0223,6.34079 -3.45437,12.37338 -11.41304,20.0606 -9.7573,9.4245 -11.14838,10.9574 -12.50702,13.78212 -2.47712,5.15014 -1.60256,9.72788 2.65929,13.9197 2.6136,2.57065 6.13507,4.85438 11.78566,7.64316 11.49487,5.67317 12.94902,6.46058 17.33578,9.38711 7.7164,5.14782 12.40171,10.85444 13.10107,15.95683 l 0.20905,1.52525 -1.54375,0.40093 c -0.84906,0.22051 -2.08448,0.54356 -2.74536,0.71789 -0.66089,0.17434 -1.31163,0.24898 -1.44609,0.16588 -0.13446,-0.0831 -0.3448,-1.4521 -0.46742,-3.04221 -0.26667,-3.45806 -1.40409,-6.14134 -3.94386,-9.30386 -3.96382,-4.93576 -9.19258,-8.50743 -21.29726,-14.54777 -10.55708,-5.26806 -14.28068,-7.62481 -17.44215,-11.0395 -3.01368,-3.25504 -3.88596,-5.42067 -3.69007,-9.16134 0.23445,-4.47716 2.12333,-7.63031 7.8192,-13.05278 8.17821,-7.78566 11.42793,-11.23684 13.39849,-14.2291 1.10432,-1.67689 2.09734,-3.32853 2.20672,-3.67032 0.10937,-0.34177 0.33606,-0.93891 0.50374,-1.32697 0.7565,-1.75067 1.39503,-4.69838 1.39503,-6.44002 0,-2.55009 -1.43409,-6.695 -3.23286,-9.3438 l -1.45314,-2.13983 -0.52062,1.02432 c -0.28634,0.56338 -0.96031,1.75163 -1.4977,2.64056 l -0.97709,1.61622 1.06017,2.44072 c 0.94532,2.17632 1.06006,2.82288 1.05923,5.9685 -7e-4,3.32326 -0.081,3.71278 -1.3819,6.71897 -2.5028,5.78351 -6.08366,10.11439 -15.51794,18.76826 -5.95936,5.46639 -8.3221,9.472 -8.29561,14.06375 0.0168,2.90596 1.30197,5.60636 3.9078,8.21083 2.8565,2.85503 6.15357,4.89263 14.68085,9.0728 7.6367,3.7436 13.15045,6.8861 16.95694,9.66442 3.2897,2.40112 7.59877,6.96715 8.90278,9.43366 1.27429,2.41032 2.20493,5.48363 1.83953,6.07484 -0.12755,0.2064 -1.3702,0.6907 -2.76143,1.07623 -2.89845,0.8032 -2.70184,0.77276 -3.00882,0.46578 z m -41.33331,-82.80985 c 4.23101,-2.09108 7.92503,-5.83754 12.53542,-12.7134 l 1.87844,-2.80148 -2.0919,-1.91409 c -2.52447,-2.30991 -4.72208,-3.76207 -5.08615,-3.36088 -0.14704,0.16203 -1.02759,1.80273 -1.95679,3.64599 -3.56684,7.07558 -6.30491,11.4598 -9.998129,16.00908 l -2.2568,2.77991 2.13626,-0.15453 c 1.543029,-0.11161 2.886999,-0.52555 4.839649,-1.4906 z m 10.43136,0.54182 c 2.0284,-0.77999 7.31893,-4.77496 8.55423,-6.45945 l 0.69272,-0.9446 -1.4792,-2.986 c -1.32469,-2.67412 -2.64562,-4.48681 -2.97976,-4.08907 -0.0669,0.0797 -0.72265,1.25608 -1.45719,2.61427 -1.84339,3.40851 -4.45047,7.27559 -6.98968,10.36783 l -2.14053,2.60672 1.91711,-0.17701 c 1.05442,-0.0974 2.80145,-0.51707 3.8823,-0.93269 z m 13.86858,-13.83041 c 0.70178,-1.17807 1.27596,-2.21029 1.27596,-2.29383 0,-0.26334 -2.57037,-2.6013 -4.51637,-4.108 -2.11433,-1.63702 -2.27705,-1.58756 -3.40635,1.0354 l -0.64041,1.48745 2.78226,2.98903 c 1.53024,1.64397 2.88277,2.99868 3.00561,3.01047 0.12284,0.0118 0.79753,-0.94244 1.4993,-2.12052 z"
+                            style="fill:#000000;stroke-width:0.35277778" />
+                    </g>
+                </svg>
+            </div>
+            <div class="name">Ranchimall</div>
+        </div>
         <div class="appName">
             <h1>M</h1>
             <h2>essenger</h2>
@@ -1036,6 +1149,18 @@
     </header>
 
     <div id="loading-screen" class="hide">
+        <div class="brand">
+            <div class="logo">
+                <svg width="100" height="130" viewBox="0 0 100 130">
+                    <g id="layer1" transform="translate(470,140)">
+                        <path transform="translate(-350,-850)" id="path5165"
+                            d="M -166.99971,804.55875 V 484.41291 H 153.14614 473.29202 V 804.55875 1124.7046 H 153.14614 -166.99971 Z m 639.93893,0 V 484.76569 H 153.14614 -166.64693 v 319.79306 319.79305 h 319.79307 319.79308 z m -168.4514,189.02282 m 10.5778,-228.53393 m -37.9181,8.56292 z m -332.434261,52.76162 c -0.12935,-0.12935 -0.23519,-1.28253 -0.23519,-2.56262 0,-6.67058 -5.44905,-13.20481 -16.4463,-19.72158 -1.96345,-1.1635 -4.3447,-2.4643 -5.29166,-2.89067 -4.957,-2.23185 -12.62447,-6.25072 -15.28525,-8.0117 -12.030489,-7.96211 -12.658389,-16.35177 -1.98645,-26.54198 1.73209,-1.65391 4.64828,-4.43585 6.48042,-6.1821 6.95926,-6.63302 10.68624,-12.58985 11.25673,-17.99167 l 0.22355,-2.11667 -1.9948,2.35011 c -3.79112,4.46638 -7.61404,7.1861 -11.52814,8.20141 -2.21719,0.57513 -2.64903,0.29106 -3.26536,-2.14806 l -0.46168,-1.82711 -2.28178,1.4509 c -2.41829,1.5377 -6.723749,3.18611 -7.521859,2.87985 -0.26212,-0.10059 -0.6859,-1.05542 -0.94173,-2.12185 -0.25584,-1.06643 -0.57694,-2.00805 -0.71357,-2.09249 -0.13663,-0.0844 -0.87878,0.3031 -1.64922,0.8612 -1.94063,1.40579 -3.46509,2.15893 -5.81469,2.8727 -2.51574,0.76424 -2.8946,0.5237 -3.62066,-2.29869 -0.88387,-3.43588 -0.92652,-3.36547 2.03806,-3.36547 6.83587,0 13.43345,-5.38116 19.896059,-16.22778 2.20502,-3.70081 3.98333,-7.22308 3.98333,-7.88969 0,-1.65984 2.6604,-0.47757 8.74073,3.88434 0.44177,0.31692 0.84002,0.51434 0.885,0.4387 0.62242,-1.04661 2.02564,-4.11571 2.02146,-4.4213 -0.0103,-0.75676 1.09171,-0.826 2.39614,-0.15054 0.71638,0.37096 2.5618,1.54517 4.10094,2.60937 l 2.79843,1.9349 0.97993,-1.81886 c 0.53896,-1.00037 0.98623,-2.08598 0.99393,-2.41245 0.0309,-1.3126 1.35752,-1.06195 4.32379,0.81695 8.04593,5.09648 12.84596,10.33008 15.13027,16.49691 0.65604,1.77111 0.54891,7.26086 -0.18316,9.38529 -1.79642,5.21312 -4.92116,9.58274 -11.10003,15.52222 -10.2817,9.88334 -11.67023,11.50598 -12.92312,15.10198 -0.68891,1.97729 -0.66829,5.81002 0.0404,7.52091 0.62466,1.50789 2.49336,3.99328 4.16986,5.54596 2.19595,2.03378 6.9095,4.82907 13.96149,8.27964 17.53725,8.58104 24.94403,14.81547 27.39109,23.05562 0.506,1.70388 0.50176,1.87158 -0.0577,2.28064 -0.71748,0.52463 -5.11519,1.57632 -5.52706,1.32176 -0.1578,-0.0975 -0.28691,-1.24175 -0.28691,-2.54272 0,-5.44225 -3.46174,-10.63587 -10.63355,-15.95345 -4.28094,-3.17412 -6.86259,-4.60768 -19.35256,-10.74621 -8.02659,-3.94489 -13.56038,-8.39151 -15.44245,-12.40863 -0.79591,-1.6988 -0.96172,-2.53931 -0.96172,-4.87494 0,-2.42145 0.15442,-3.14785 1.08741,-5.11528 1.21505,-2.56222 3.52772,-5.46919 6.89222,-8.66337 9.99629,-9.49026 11.81397,-11.48021 14.18898,-15.53373 2.29842,-3.92278 2.87861,-5.90728 2.87861,-9.84596 0,-3.92937 -0.49788,-5.6762 -2.54551,-8.93109 -1.8328,-2.91338 -8.45442,-9.23697 -9.67231,-9.23697 -0.43533,0 -2.1296,3.4982 -1.88553,3.89311 0.11519,0.18638 1.08106,1.16322 2.14638,2.17076 4.62673,4.37576 6.94442,9.15024 6.92646,14.26857 -0.0223,6.34079 -3.45437,12.37338 -11.41304,20.0606 -9.7573,9.4245 -11.14838,10.9574 -12.50702,13.78212 -2.47712,5.15014 -1.60256,9.72788 2.65929,13.9197 2.6136,2.57065 6.13507,4.85438 11.78566,7.64316 11.49487,5.67317 12.94902,6.46058 17.33578,9.38711 7.7164,5.14782 12.40171,10.85444 13.10107,15.95683 l 0.20905,1.52525 -1.54375,0.40093 c -0.84906,0.22051 -2.08448,0.54356 -2.74536,0.71789 -0.66089,0.17434 -1.31163,0.24898 -1.44609,0.16588 -0.13446,-0.0831 -0.3448,-1.4521 -0.46742,-3.04221 -0.26667,-3.45806 -1.40409,-6.14134 -3.94386,-9.30386 -3.96382,-4.93576 -9.19258,-8.50743 -21.29726,-14.54777 -10.55708,-5.26806 -14.28068,-7.62481 -17.44215,-11.0395 -3.01368,-3.25504 -3.88596,-5.42067 -3.69007,-9.16134 0.23445,-4.47716 2.12333,-7.63031 7.8192,-13.05278 8.17821,-7.78566 11.42793,-11.23684 13.39849,-14.2291 1.10432,-1.67689 2.09734,-3.32853 2.20672,-3.67032 0.10937,-0.34177 0.33606,-0.93891 0.50374,-1.32697 0.7565,-1.75067 1.39503,-4.69838 1.39503,-6.44002 0,-2.55009 -1.43409,-6.695 -3.23286,-9.3438 l -1.45314,-2.13983 -0.52062,1.02432 c -0.28634,0.56338 -0.96031,1.75163 -1.4977,2.64056 l -0.97709,1.61622 1.06017,2.44072 c 0.94532,2.17632 1.06006,2.82288 1.05923,5.9685 -7e-4,3.32326 -0.081,3.71278 -1.3819,6.71897 -2.5028,5.78351 -6.08366,10.11439 -15.51794,18.76826 -5.95936,5.46639 -8.3221,9.472 -8.29561,14.06375 0.0168,2.90596 1.30197,5.60636 3.9078,8.21083 2.8565,2.85503 6.15357,4.89263 14.68085,9.0728 7.6367,3.7436 13.15045,6.8861 16.95694,9.66442 3.2897,2.40112 7.59877,6.96715 8.90278,9.43366 1.27429,2.41032 2.20493,5.48363 1.83953,6.07484 -0.12755,0.2064 -1.3702,0.6907 -2.76143,1.07623 -2.89845,0.8032 -2.70184,0.77276 -3.00882,0.46578 z m -41.33331,-82.80985 c 4.23101,-2.09108 7.92503,-5.83754 12.53542,-12.7134 l 1.87844,-2.80148 -2.0919,-1.91409 c -2.52447,-2.30991 -4.72208,-3.76207 -5.08615,-3.36088 -0.14704,0.16203 -1.02759,1.80273 -1.95679,3.64599 -3.56684,7.07558 -6.30491,11.4598 -9.998129,16.00908 l -2.2568,2.77991 2.13626,-0.15453 c 1.543029,-0.11161 2.886999,-0.52555 4.839649,-1.4906 z m 10.43136,0.54182 c 2.0284,-0.77999 7.31893,-4.77496 8.55423,-6.45945 l 0.69272,-0.9446 -1.4792,-2.986 c -1.32469,-2.67412 -2.64562,-4.48681 -2.97976,-4.08907 -0.0669,0.0797 -0.72265,1.25608 -1.45719,2.61427 -1.84339,3.40851 -4.45047,7.27559 -6.98968,10.36783 l -2.14053,2.60672 1.91711,-0.17701 c 1.05442,-0.0974 2.80145,-0.51707 3.8823,-0.93269 z m 13.86858,-13.83041 c 0.70178,-1.17807 1.27596,-2.21029 1.27596,-2.29383 0,-0.26334 -2.57037,-2.6013 -4.51637,-4.108 -2.11433,-1.63702 -2.27705,-1.58756 -3.40635,1.0354 l -0.64041,1.48745 2.78226,2.98903 c 1.53024,1.64397 2.88277,2.99868 3.00561,3.01047 0.12284,0.0118 0.79753,-0.94244 1.4993,-2.12052 z"
+                            style="fill:#000000;stroke-width:0.35277778" />
+                    </g>
+                </svg>
+            </div>
+            <div class="name">Ranchimall</div>
+        </div>
         <div class="appName">
             <h1>M</h1>
             <h2>essenger</h2>
@@ -1080,7 +1205,7 @@
                 <span id="prev-mail">View Previous Mail</span>
                 <div id="reply-mail" class="compose-mail hide">
                     <div class="compose-head">
-                        Reply Mail
+                        Reply Mail <span></span>
                     </div>
                     <div class="compose-body">
                         <form id="reply-mail-form" class="compose-mail-form input-container"
@@ -1088,7 +1213,7 @@
                             <input type="text" name="subject" placeholder="Subject" />
                             <textarea name="content" placeholder="Type a mail"></textarea>
                             <button type="submit">&#x21A9;&#x2709; Reply</button>
-                            <button type="reset">&#x2716;</button>
+                            <button type="reset">&#x232B;</button>
                         </form>
                     </div>
                 </div>
@@ -1100,15 +1225,14 @@
                 <h4>Settings</h4>
                 <div>
                     <input type="button" id="backup-data" value="&#x25BC; Backup Data" />
+                    <input type="file" id="restore-data" accept=".json" /><label for="restore-data">&#x25B2; Restore
+                        Data</label>
                     <span id="backup-info"></span>
                 </div>
                 <div>
-                    <input type="file" id="restore-data" accept=".json" /><label for="restore-data">&#x25B2; Restore
-                        Data</label>
-                    <span id="restore-info"></span>
-                </div>
-                <div>
+                    <input type="text" id="view-privkey" title="Click to Copy" placeholder="&#x25C9; View Private Key" readonly/>
                     <input type="button" id="sign-out" value="&#x219A; Sign Out" />
+                    <input type="button" id="clear-data" value="&#x2620; Clear Data" />
                 </div>
             </div>
         </div>
@@ -1117,6 +1241,7 @@
             <div id="confirmation" class="popup-container">
                 <fieldset>
                     <legend></legend>
+                    <span></span>
                     <div class="input-container i-2">
                         <input type="submit" value="Ok" />
                         <input type="reset" value="Cancel" />
@@ -1140,7 +1265,7 @@
             <div id="mail-list"></div>
             <div id="new-mail" class="compose-mail">
                 <div class="compose-head">
-                    New Mail
+                    New Mail <span></span>
                 </div>
                 <div class="compose-body">
                     <form id="new-mail-form" class="compose-mail-form input-container"
@@ -1149,7 +1274,7 @@
                         <input type="text" name="subject" placeholder="Subject" />
                         <textarea name="content" placeholder="Type a mail"></textarea>
                         <button type="submit">&#x2709;&#x27A0; Send</button>
-                        <button type="reset">&#x2716;</button>
+                        <button type="reset">&#x232B;</button>
                     </form>
                 </div>
             </div>
@@ -1195,11 +1320,11 @@
         })
 
         document.getElementById("new-mail").children[0].addEventListener('click', function (e) {
-            this.nextElementSibling.classList.toggle("active");
+            this.classList.toggle("active");
         })
 
         document.getElementById("reply-mail").children[0].addEventListener('click', function (e) {
-            this.nextElementSibling.classList.toggle("active");
+            this.classList.toggle("active");
         })
 
         document.getElementById("prev-mail").addEventListener('click', function (e) {
@@ -1222,24 +1347,39 @@
                 floID = e.target.parentNode.getAttribute("name");
             let toInput = document.forms["new-mail-form"]["to"]
             let tmp = toInput.value.trim();
-            if (tmp == '')
-                tmp = floID;
-            else
-                tmp += `, ${floID}`;
+            if(!tmp.includes(floID)){
+                if (tmp == '')
+                    tmp = floID;
+                else
+                    tmp += `, ${floID}`;
+            }
             toInput.value = tmp;
-            document.getElementById("new-mail").children[1].classList.add("active");
+            document.getElementById("new-mail").children[0].classList.add("active");
             return false;
         });
 
         document.getElementById("sign-out").addEventListener('click', function (e) {
-            getConfirmation('Signing out will delete all stored! Are you sure you want to Sign out?').then(
+            getConfirmation('Sign Out?',
+                '**Remember to store your PRIVATE-KEY** \nAre you sure you want to Sign out?', "Sign-Out", "Stay Signed-In").then(
                 result => {
                     floDapps.logout().then(result => {
                         showMessage("Successfully Signed out")
                         document.getElementById("settings-screen").parentNode.classList.add("hide");
                         setTimeout(onLoadStartUp, 2000)
                     }).catch(error => showMessage(error, "error"))
-                })
+                }).catch(error => {})
+        });
+
+        document.getElementById("clear-data").addEventListener('click', function (e) {
+            getConfirmation('Clear Data?',
+                `Are you sure you want to clear stored data from the browser? \n**This can't be undone**\nMake sure you have stored the PRIVATE-KEY and Backuped the data.`, "Clear").then(
+                result => {
+                    floDapps.clearUserData().then(result => {
+                        showMessage("Successfully Cleared local data")
+                        document.getElementById("settings-screen").parentNode.classList.add("hide");
+                        setTimeout(onLoadStartUp, 2000)
+                    }).catch(error => showMessage(error, "error"))
+                }).catch(error => {})
         });
 
         document.getElementById('show-message').children[1].addEventListener("click", function (e) {
@@ -1267,6 +1407,21 @@
             document.getElementById("settings-screen").parentNode.classList.remove('hide')
         })
 
+        document.getElementById("view-privkey").addEventListener("mouseover", function(e){
+            this.value = myPrivKey;
+        })
+
+        document.getElementById("view-privkey").addEventListener("mouseout", function(e){
+            this.value = "";
+        });
+
+        document.getElementById("view-privkey").addEventListener("click", function(e){
+            this.select();
+            this.setSelectionRange(0, 52);
+            document.execCommand("copy");
+            showMessage("Private Key copied to clipboard!", "warn")
+        });
+
         document.getElementById("backup-data").addEventListener("click", function (e) {
             let backupInfoText = document.getElementById("backup-info")
             backupInfoText.classList.remove("error")
@@ -1289,7 +1444,7 @@
 
         document.getElementById("restore-data").addEventListener("change", function (e) {
             let file = this.files[0]
-            let restoreInfoText = document.getElementById("restore-info");
+            let restoreInfoText = document.getElementById("backup-info");
             restoreInfoText.classList.remove("error");
             restoreInfoText.textContent = `Retrieving backup data! Please wait...`;
             if (!file) {
@@ -1298,8 +1453,8 @@
                 return;
             }
             messenger.parseBackup(file).then(data => {
-                getConfirmation(
-                    `Restore ${Object.keys(data.contacts).length} Contacts, ${Object.keys(data.messages).length} Messages and ${Object.keys(data.mails).length} Mails?`
+                getConfirmation('Restore Data?',
+                    `$Found:\n ${Object.keys(data.contacts).length} Contacts,\n ${Object.keys(data.messages).length} Messages,\n ${Object.keys(data.mails).length} Mails\nRestore Data?`, "Restore"
                 ).then(result => {
                     restoreInfoText.textContent = `Restoring data! Please wait...`;
                     messenger.restoreData(data).then(result => {
@@ -1343,11 +1498,14 @@
             return element;
         }
 
-        function getConfirmation(message) {
+        function getConfirmation(title, message, trueBtn = "Ok", falseBtn = "Cancel") {
             let confirmation = document.getElementById("confirmation");
-            confirmation.getElementsByTagName("legend")[0].textContent = message;
+            confirmation.getElementsByTagName("legend")[0].textContent = title;
+            confirmation.getElementsByTagName("span")[0].textContent = message;
             confirmation.parentNode.classList.remove("hide");
-            let options = confirmation.getElementsByTagName("input")
+            let options = confirmation.getElementsByTagName("input");
+            options[0].value = trueBtn;
+            options[1].value = falseBtn; 
             return new Promise((resolve, reject) => {
                 let interval = setInterval(() => {
                     if (confirmation.parentNode.classList.contains("hide")) {
@@ -1444,6 +1602,13 @@
             getConversationElement(floID).appendChild(msgBox)
         }
 
+        function renderMarked(data){
+            for(let d in data){
+                let element = document.getElementsByName(d)[0]
+                data[d].forEach(mark => element.classList.add(mark))
+            }
+        }
+
         function getConversationElement(floID, name = "#null") {
             let element = document.getElementById(floID)
             if (!element) {
@@ -1455,10 +1620,10 @@
             return element;
         }
 
-        function renderMessages(data, init = false) {
+        function renderMessages(data, markUnread = true) {
             for (m in data) {
                 renderMessageBox(data[m].floID, data[m].message, data[m].time, data[m].category)
-                if (!init)
+                if (markUnread)
                     document.getElementsByName(data[m].floID)[0].classList.add("unread");
             }
         }
@@ -1476,12 +1641,13 @@
             else
                 document.getElementById("warn-no-encryption").classList.remove("hide");
             document.getElementsByName(floID)[0].classList.remove("unread");
+            messenger.removeMark(floID, "unread");
         }
 
-        function renderMailCard(mailID, subject, timestamp, category, floID) {
+        function renderMailCard(mailRef, subject, timestamp, category, floID) {
             let mailCard = document.createElement("div");
             mailCard.setAttribute("class", "mail-card");
-            mailCard.setAttribute("name", mailID);
+            mailCard.setAttribute("name", mailRef);
             let dateTime = new Date(timestamp).toString();
             let dateTag = document.createElement("span");
             dateTag.textContent = dateTime.slice(4, 10);
@@ -1501,67 +1667,71 @@
             mailList.insertBefore(mailCard, mailList.firstChild);
         }
 
-        function renderMailList(mails) {
-            for (m in mails)
-                renderMailCard(m, mails[m].subject, mails[m].time, mails[m].category, mails[m].floID);
+        function renderMailList(mails, markUnread = true) {
+            for (m in mails){
+                renderMailCard(mails[m].ref, mails[m].subject, mails[m].time, mails[m].category, mails[m].floID);
+                if (markUnread)
+                    document.getElementsByName(mails[m].ref)[0].classList.add("unread");
+            }
         }
 
-        function viewMail(mailID, newView = true) {
+        function viewMail(mailRef, newView = true) {
             //clear the container and display popup (if needed)
             if (newView)
                 clearElement(document.getElementById("mail-container")).parentNode.parentNode.classList.remove("hide");
 
-            Promise.all([compactIDB.readData("mails", mailID), compactIDB.readData("mailContent", mailID)]).then(
-                results => {
+            messenger.getMail(mailRef).then(result => {
                     //create mail content
                     let mailContent = document.createElement("div");
                     mailContent.setAttribute("class", "mail-content");
                     //add subject
                     let subjectTag = document.createElement("span");
-                    subjectTag.textContent = results[0].subject;
+                    subjectTag.textContent = result.subject;
                     mailContent.appendChild(subjectTag);
                     //add category
                     let categoryTag = document.createElement("span");
-                    categoryTag.textContent = results[0].category;
+                    categoryTag.textContent = result.category;
                     mailContent.appendChild(categoryTag);
                     //add name (if available)  
-                    if (Array.isArray(results[0].floID))
-                        results[0].floID = results[0].floID.join(", ")
+                    if (Array.isArray(result.floID))
+                        result.floID = result.floID.join(", ")
                     let nameTag = document.createElement("span");
-                    nameTag.textContent = floGlobals.contacts[results[0].floID] || ' ';
+                    nameTag.textContent = floGlobals.contacts[result.floID] || ' ';
                     mailContent.appendChild(nameTag);
                     //add floID
                     let floIDTag = document.createElement("span");
-                    floIDTag.textContent = `<${results[0].floID}>`;
+                    floIDTag.textContent = `<${result.floID}>`;
                     mailContent.appendChild(floIDTag);
                     //add data n time
                     let timeTag = document.createElement("span");
-                    timeTag.textContent = new Date(results[0].time).toString().slice(4, 21);
+                    timeTag.textContent = new Date(result.time).toString().slice(4, 21);
                     mailContent.appendChild(timeTag);
                     //add mail content
                     let contentTag = document.createElement("p");
-                    contentTag.textContent = results[1];
+                    contentTag.textContent = result.content;
                     mailContent.appendChild(contentTag);
                     //append the contents to mail container
                     document.getElementById("mail-container").appendChild(mailContent);
                     //add prop for previous mail (if available)
                     let prevMail = document.getElementById("prev-mail");
-                    prevMail.dataset["value"] = results[0].parentMailID;
-                    prevMail.style.display = results[0].parentMailID ? 'block' : 'none';
+                    prevMail.dataset["value"] = result.prevRef;
+                    prevMail.style.display = result.prevRef ? 'block' : 'none';
                     //set values for reply mail form if new view
                     if (newView) {
-                        if (results[0].floID.includes(','))
+                        if (result.floID.includes(','))
                             document.getElementById("reply-mail").classList.add("hide");
                         else {
                             let replyForm = document.forms["reply-mail-form"];
                             replyForm.reset();
-                            replyForm.dataset["to"] = results[0].floID;
-                            replyForm.dataset["parentMailID"] = mailID;
-                            replyForm["subject"].value = results[0].subject.startsWith("Re: ") ? results[0]
-                                .subject : `Re: ${results[0].subject}`;
+                            replyForm.dataset["to"] = result.floID;
+                            replyForm.dataset["prevRef"] = mailRef;
+                            replyForm["subject"].value = result.subject.startsWith("Re: ") ? result
+                                .subject : `Re: ${result.subject}`;
                             document.getElementById("reply-mail").classList.remove("hide");
                         }
                     }
+                    document.getElementsByName(mailRef)[0].classList.remove("unread");
+                    messenger.removeMark(mailRef, "unread");
                 }).catch(error => showMessage("Unable to read mail", "error", error))
         }
 
@@ -1595,7 +1765,7 @@
                                 });
                         else
                             showMessage(`${Object.keys(result.success).length} Mail(s) sent!`)
-                        renderMailCard(result.data.time, result.data.subject, result.data.time, result.data
+                        renderMailCard(result.data.ref, result.data.subject, result.data.time, result.data
                             .category, result.data.floID);
                         form.reset();
                     }
@@ -1610,10 +1780,10 @@
             let recipient = form.dataset.to;
             let subject = form["subject"].value;
             let content = form["content"].value;
-            let parentMailID = form.dataset.parentMailID;
-            messenger.replyMail(parentMailID, subject, content, recipient).then(data => {
+            let prevRef = form.dataset.prevRef;
+            messenger.replyMail(prevRef, subject, content, recipient).then(data => {
                 showMessage(`Mail replied!`);
-                renderMailCard(data.time, data.subject, data.time, data.category, data.floID);
+                renderMailCard(data.ref, data.subject, data.time, data.category, data.floID);
                 form.reset();
             }).catch(error => showMessage("Failed to send mail!", "error", error))
         }
@@ -9880,16 +10050,30 @@ Bitcoin.Util = {
                             }
                         },
                         //login credentials
-                        credentials: {},
-                        //for apps
+                        credentials: {}
+                    }
+                    compactIDB.initDB(floGlobals.application, obj).then(result => {
+                        compactIDB.setDefaultDB(floGlobals.application);
+                        resolve("IndexedDB App Storage Initated Successfully")
+                    }).catch(error => reject(error));
+                })
+            },
+
+            initUserDB: function () {
+                return new Promise((resolve, reject) => {
+                    var obj = {
                         pubKeys: {},
                         contacts: {},
                         messages: {},
                         mails: {},
-                        mailContent: {}
+                        mailContent: {},
+                        mailRef: {},
+                        marked: {},
+                        appendix: {},
                     }
-                    compactIDB.initDB(floGlobals.application, obj).then(result => {
-                        resolve("IndexedDB App Storage Initated Successfully")
+                    compactIDB.initDB(`${floGlobals.application}_${myFloID}`, obj).then(result => {
+                        compactIDB.setDefaultDB(`${floGlobals.application}_${myFloID}`);
+                        resolve("User Storage Initated Successfully")
                     }).catch(error => reject(error));
                 })
             },
@@ -9943,7 +10127,7 @@ Bitcoin.Util = {
 
                 loadDataFromIDB: function () {
                     return new Promise((resolve, reject) => {
-                        var loadData = ["pubKeys", "contacts"]
+                        var loadData = []
                         var promises = []
                         for (var i = 0; i < loadData.length; i++)
                             promises[i] = compactIDB.readAllData(loadData[i])
@@ -10075,8 +10259,9 @@ Bitcoin.Util = {
 
         launchStartUp: function () {
             return new Promise((resolve, reject) => {
+                reactor.dispatchEvent("startUpSuccessLog", 'Initating App Storage')
                 this.util.initIndexedDB().then(log => {
-                    console.log(log)
+                    reactor.dispatchEvent("startUpSuccessLog", 'App Storage Initaion Sucessful')
                     this.util.callStartUpFunction.total = Object.keys(this.util
                         .startUpFunctions).length
                     this.util.callStartUpFunction.completed = 0
@@ -10084,9 +10269,22 @@ Bitcoin.Util = {
                     var promises = []
                     for (fn in this.util.startUpFunctions)
                         promises.push(this.util.callStartUpFunction(fn))
-                    Promise.all(promises)
-                        .then(results => resolve('App Startup finished successful'))
-                        .catch(errors => reject('App StartUp failed'))
+                    Promise.all(promises).then(results => {
+                        reactor.dispatchEvent("startUpSuccessLog",
+                            'Initating User Database')
+                        this.util.initUserDB().then(log => {
+                            reactor.dispatchEvent("startUpSuccessLog",
+                                'User Database Initated sucessfully')
+                            resolve('App Startup finished successful')
+                        }).catch(errors => {
+                            reactor.dispatchEvent("startUpErrorLog",
+                                `Failed to initate User Database`)
+                            reject('App StartUp failed')
+                        })
+                    }).catch(errors => reject('App StartUp failed'))
+                }).catch(errors => {
+                    reactor.dispatchEvent("startUpErrorLog", `Failed to initate App Storage`)
+                    reject('App StartUp failed')
                 })
             })
         },
@@ -10097,10 +10295,30 @@ Bitcoin.Util = {
 
         logout: function () {
             return new Promise((resolve, reject) => {
-                compactIDB.deleteDB().then(result => {
-                    console.log(result)
+                compactIDB.openDB(floGlobals.application).then(db => {
+                    var obs = db.transaction("credentials", "readwrite").objectStore(
+                        "credentials");
+                    let clearReq = obs.clear();
+                    clearReq.onsuccess = evt => {
+                        localStorage.removeItem(`${floGlobals.application}#privKey`);
+                        //clear memory data
+                        floGlobals.appendix = floGlobals.contacts = floGlobals.pubKeys =
+                            undefined;
+                        myPrivKey = myPubKey = myFloID = undefined;
+                        resolve(`Successfully logged out!`);
+                    };
+                    clearReq.onerror = evt => reject(evt.target.error);
+                })
+            });
+        },
+
+        clearUserData: function () {
+            return new Promise((resolve, reject) => {
+                let promises = [compactIDB.deleteDB(), this.logout()]
+                Promise.all(promises).then(results => {
+                    console.log(results)
                     localStorage.removeItem(`${floGlobals.application}#privKey`)
-                    resolve("Logout Sucessful")
+                    resolve("Local data cleared Sucessful")
                 }).catch(error => reject(error))
             })
         }
@@ -10194,9 +10412,10 @@ Bitcoin.Util = {
                         time: Date.now(),
                         floID: receiver,
                         category: "sent",
-                        message: message
+                        message: Crypto.AES.encrypt(message, floGlobals.appendix.AESKey)
                     }
-                    compactIDB.writeData("messages", data, `${data.time}`)
+                    compactIDB.addData("messages", JSON.parse(JSON.stringify(data)), `${data.time}`)
+                    data.message = message;
                     resolve(data)
                 } catch (error) {
                     reject(error)
@@ -10212,7 +10431,8 @@ Bitcoin.Util = {
                 }
                 let mail = {
                     subject: subject,
-                    content: content
+                    content: content,
+                    ref: floCrypto.randString(32, true)
                 }
                 for (let i = 0; i < recipients.length; i++) {
                     try {
@@ -10230,21 +10450,24 @@ Bitcoin.Util = {
                     time: Date.now(),
                     floID: Object.keys(result.success),
                     category: "sentTo",
-                    subject: subject
+                    subject: subject,
+                    ref: mail.ref
                 }
-                compactIDB.writeData("mails", data, `${data.time}`)
-                compactIDB.writeData("mailContent", content, `${data.time}`)
+                compactIDB.addData("mails", data, `${data.time}`)
+                compactIDB.addData("mailContent", Crypto.AES.encrypt(content, floGlobals.appendix.AESKey), `${data.time}`)
+                compactIDB.addData("mailRef", `${data.time}`, mail.ref)
                 result.data = data
                 resolve(result)
             })
         },
 
-        replyMail(parentMailID, subject, content, recipient) {
+        replyMail(prevRef, subject, content, recipient) {
             return new Promise(async (resolve, reject) => {
                 let mail = {
-                    parentMailID: parentMailID,
+                    prevRef: prevRef,
                     subject: subject,
-                    content: content
+                    content: content,
+                    ref: floCrypto.randString(32, true)
                 }
                 try {
                     if (recipient in floGlobals.pubKeys)
@@ -10255,11 +10478,13 @@ Bitcoin.Util = {
                         time: Date.now(),
                         floID: recipient,
                         category: "replyTo",
-                        parentMailID: parentMailID,
-                        subject: subject
+                        prevRef: prevRef,
+                        subject: subject,
+                        ref: mail.ref
                     }
-                    compactIDB.writeData("mails", data, `${data.time}`)
-                    compactIDB.writeData("mailContent", content, `${data.time}`)
+                    compactIDB.addData("mails", data, `${data.time}`)
+                    compactIDB.addData("mailContent", Crypto.AES.encrypt(content,floGlobals.appendix.AESKey) , `${data.time}`)
+                    compactIDB.addData("mailRef", `${data.time}`, mail.ref)
                     resolve(data)
                 } catch (error) {
                     reject(error)
@@ -10272,7 +10497,7 @@ Bitcoin.Util = {
                 var request = {
                     receiverID: myFloID,
                     application: floGlobals.application,
-                    lowerVectorClock: floGlobals.lastReceived + 1,
+                    lowerVectorClock: floGlobals.appendix.lastReceived + 1,
                 }
                 floSupernode.requestData(JSON.stringify(request), request.receiverID).then(response => {
                     let dataSet = JSON.parse(response);
@@ -10317,38 +10542,86 @@ Bitcoin.Util = {
                             if (typeof tmp === "string") {
                                 //process as message
                                 data.category = "received"
-                                data.message = tmp;
+                                data.message = Crypto.AES.encrypt(tmp, floGlobals.appendix.AESKey);
                                 newInbox.messages[vc] = data;
-                                compactIDB.writeData("messages", data, vc)
+                                compactIDB.addData("messages", JSON.parse(JSON.stringify(data)), vc)
+                                data.message = tmp;
+                                this.addMark(data.floID, "unread")
                             } else if (typeof tmp === "object") {
                                 //process as mail
                                 data.subject = tmp.subject;
-                                if (tmp.parentMailID) {
-                                    data.parentMailID = tmp.parentMailID;
+                                data.ref = tmp.ref;
+                                if (tmp.prevRef) {
+                                    data.prevRef = tmp.prevRef;
                                     data.category = "replyFrom";
                                 } else
                                     data.category = "receivedFrom"
                                 newInbox.mails[vc] = data;
-                                compactIDB.writeData("mails", data, vc);
-                                compactIDB.writeData("mailContent", tmp.content, vc);
+                                compactIDB.addData("mails", data, vc);
+                                compactIDB.addData("mailContent", Crypto.AES.encrypt(tmp.content,
+                                    floGlobals.appendix.AESKey), vc);
+                                compactIDB.addData("mailRef", vc, data.ref)
+                                this.addMark(data.ref, "unread")
                             }
                         } catch (error) {
                             console.error(error)
                         } finally {
-                            floGlobals.lastReceived = vc;
+                            floGlobals.appendix.lastReceived = vc;
                         }
                     }
+                    compactIDB.writeData("appendix", floGlobals.appendix.lastReceived,
+                        "lastReceived");
                     resolve(newInbox)
                 }).catch(error => reject(error))
             })
         },
 
-        getMail(mailID) {
+        getMail(mailRef) {
             return new Promise((resolve, reject) => {
-                compactIDB.readData("mailContent", mailID)
-                    .then(result => resolve(result))
-                    .catch(error => reject(error))
+                compactIDB.readData("mailRef", mailRef).then(result => {
+                    let promises = [compactIDB.readData("mails", result), compactIDB.readData("mailContent", result)]
+                    Promise.all(promises).then(results => {
+                        results[0].content = Crypto.AES.decrypt(results[1], floGlobals.appendix.AESKey);
+                        resolve(results[0]);
+                    }).catch(error => reject(error))
+                }).catch(error => reject(error))
             });
+        },
+
+        addMark(key, mark) {
+            return new Promise((resolve, reject) => {
+                compactIDB.readData("marked", key).then(result => {
+                    if (!result)
+                        result = [mark];
+                    else if (!result.includes(mark))
+                        result.push(mark);
+                    else
+                        return resolve("Mark already exist");
+                    compactIDB.writeData("marked", result, key)
+                        .then(result => resolve(result))
+                        .catch(error => reject(error))
+                }).catch(error => reject(error))
+            })
+        },
+
+        removeMark(key, mark) {
+            return new Promise((resolve, reject) => {
+                compactIDB.readData("marked", key).then(result => {
+                    if (!result || !result.includes(mark))
+                        return resolve("Mark doesnot exist")
+                    else {
+                        let process;
+                        if (result.length == 1) //only given mark is present, remove it
+                            process = compactIDB.removeData("marked", key)
+                        else {
+                            result.splice(result.indexOf(mark),
+                            1); //remove the mark from the list of marks
+                            process = compactIDB.writeData("marked", result, key)
+                        }
+                        process.then(result => resolve("Mark removed")).catch(error => reject(error))
+                    }
+                }).catch(error => reject(error))
+            })
         },
 
         storeContact(floID, name) {
@@ -10364,26 +10637,45 @@ Bitcoin.Util = {
 
         loadDataFromIDB() {
             return new Promise((resolve, reject) => {
-                let loadData = ["messages", "mails"]
+                let loadData = ["contacts", "pubKeys", "messages", "mails", "marked", "appendix"]
                 let promises = []
                 for (var i = 0; i < loadData.length; i++)
                     promises[i] = compactIDB.readAllData(loadData[i])
                 Promise.all(promises).then(results => {
-                    let result = {}
+                    let data = {}
                     for (var i = 0; i < loadData.length; i++)
-                        result[loadData[i]] = results[i]
-                    //getLastReceived
-                    let lastMessage = Object.keys(result["messages"]).slice(-1).pop() || '0';
-                    let lastMail = Object.keys(result["mails"]).slice(-1).pop() || '0';
-                    result["_lastReceived_"] = lastMessage > lastMail ? lastMessage : lastMail;
-                    resolve(result)
+                        data[loadData[i]] = results[i]
+                    data.appendix.lastReceived = data.appendix.lastReceived || '0'
+                    if (data.appendix.AESKey) {
+                        try {
+                            let AESKey = floCrypto.decryptData(data.appendix.AESKey, myPrivKey);
+                            data.appendix.AESKey = AESKey;
+                            for (let m in data.messages) {
+                                let decrypted = Crypto.AES.decrypt(data.messages[m].message,
+                                    AESKey)
+                                data.messages[m].message = decrypted;
+                            }
+                            resolve(data)
+                        } catch (error) {
+                            reject("Corrupted AES Key");
+                        }
+                    } else {
+                        if (Object.keys(data.messages).length)
+                            return reject("AES Key not Found")
+                        let AESKey = floCrypto.randString(32);
+                        let encryptedKey = floCrypto.encryptData(AESKey, myPubKey);
+                        compactIDB.addData("appendix", encryptedKey, "AESKey").then(result => {
+                            data.appendix.AESKey = AESKey;
+                            resolve(data);
+                        }).catch(error => reject("Unable to Generate AES Key"))
+                    }
                 }).catch(error => reject(error))
             })
         },
 
         backupData() {
             return new Promise((resolve, reject) => {
-                let obs = ["contacts", "pubKeys", "messages", "mails", "mailContent"]
+                let obs = ["contacts", "pubKeys", "messages", "mails", "mailContent", "mailRef", "marked", "appendix"]
                 let promises = [];
                 obs.forEach(o => promises.push(compactIDB.readAllData(o)))
                 Promise.all(promises).then(results => {
@@ -10443,6 +10735,24 @@ Bitcoin.Util = {
                 else
                     parseData = data => new Promise((res, rej) => res(data))
                 parseData(arg).then(data => {
+                    if (data.appendix.lastReceived < floGlobals.appendix.lastReceived)
+                        data.appendix.lastReceived = floGlobals.appendix.lastReceived;
+                    let AESKey = floCrypto.decryptData(data.appendix.AESKey, myPrivKey);
+                    if (AESKey !== floGlobals.appendix.AESKey) {
+                        for (let m in data.message) {
+                            let decrypted = Crypto.AES.decrypt(data.messages[m].message, AESKey)
+                            let encrypted = Crypto.AES.encrypt(decrypted, floGlobals.appendix
+                                .AESKey)
+                            result.messages[m].message = encrypted;
+                        }
+                        for (let m in data.mailContent) {
+                            let decrypted = Crypto.AES.decrypt(data.mailContent[m], AESKey)
+                            let encrypted = Crypto.AES.encrypt(decrypted, floGlobals.appendix
+                                .AESKey)
+                            result.mailContent[m] = encrypted;
+                        }
+                    }
+                    delete data.appendix.AESKey;
                     let promises = [];
                     for (obs in data)
                         for (value in data[obs])
