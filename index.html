@@ -1063,6 +1063,7 @@
         //display loading screen
         document.getElementById("loading-screen").classList.remove("hide")
         document.getElementById("sign-in-box").classList.add("hide")
+        document.getElementById("settings-screen").parentNode.classList.add("hide")
         //clear Rendered Elements
         let elementsToReset = ["startup-load-msg", 'mail-list', 'contact-list', 'conversation-body',
             'receiver-floID', 'receiver-name', "backup-info"
@@ -1454,7 +1455,7 @@
             }
             messenger.parseBackup(file).then(data => {
                 getConfirmation('Restore Data?',
-                    `$Found:\n ${Object.keys(data.contacts).length} Contacts,\n ${Object.keys(data.messages).length} Messages,\n ${Object.keys(data.mails).length} Mails\nRestore Data?`, "Restore"
+                    `Found:\n ${Object.keys(data.contacts).length} Contacts,\n ${Object.keys(data.messages).length} Messages,\n ${Object.keys(data.mails).length} Mails\nRestore Data?`, "Restore"
                 ).then(result => {
                     restoreInfoText.textContent = `Restoring data! Please wait...`;
                     messenger.restoreData(data).then(result => {
@@ -9890,10 +9891,10 @@ Bitcoin.Util = {
       this.dbName = dbName;
     },
 
-    initDB: function (dbName, objectStores = {}) {
+    initDB: function (dbName, objectStores = {}, version = null) {
       return new Promise((resolve, reject) => {
         this.dbName = this.dbName || dbName;
-        var idb = indexedDB.open(dbName);
+        var idb = version ? indexedDB.open(dbName, version) : indexedDB.open(dbName);
         idb.onerror = (event) => {
           reject("Error in opening IndexedDB!");
         };
@@ -9911,8 +9912,12 @@ Bitcoin.Util = {
           if (JSON.stringify(Object.values(db.objectStoreNames).sort()) === JSON.stringify(Object.keys(
               objectStores).sort()))
             resolve("Initiated IndexedDB");
-          else
-            reject("IndexedDB already exist with different ObjectStores!");
+          else{
+            Object.values(db.objectStoreNames).forEach(obs => delete objectStores[obs])
+            this.initDB(dbName, objectStores, db.version + 1)
+                .then(result => resolve(result))
+                .catch(error => reject(error))
+          }
           db.close();
         }
       });
@@ -10610,15 +10615,10 @@ Bitcoin.Util = {
                     if (!result || !result.includes(mark))
                         return resolve("Mark doesnot exist")
                     else {
-                        let process;
-                        if (result.length == 1) //only given mark is present, remove it
-                            process = compactIDB.removeData("marked", key)
-                        else {
-                            result.splice(result.indexOf(mark),
-                            1); //remove the mark from the list of marks
-                            process = compactIDB.writeData("marked", result, key)
-                        }
-                        process.then(result => resolve("Mark removed")).catch(error => reject(error))
+                        result.splice(result.indexOf(mark), 1); //remove the mark from the list of marks
+                        compactIDB.writeData("marked", result, key)
+                            .then(result => resolve("Mark removed"))
+                            .catch(error => reject(error))
                     }
                 }).catch(error => reject(error))
             })
@@ -10653,6 +10653,7 @@ Bitcoin.Util = {
                             for (let m in data.messages) {
                                 let decrypted = Crypto.AES.decrypt(data.messages[m].message,
                                     AESKey)
+                                    
                                 data.messages[m].message = decrypted;
                             }
                             resolve(data)
@@ -10739,17 +10740,17 @@ Bitcoin.Util = {
                         data.appendix.lastReceived = floGlobals.appendix.lastReceived;
                     let AESKey = floCrypto.decryptData(data.appendix.AESKey, myPrivKey);
                     if (AESKey !== floGlobals.appendix.AESKey) {
-                        for (let m in data.message) {
+                        for (let m in data.messages) {
                             let decrypted = Crypto.AES.decrypt(data.messages[m].message, AESKey)
                             let encrypted = Crypto.AES.encrypt(decrypted, floGlobals.appendix
                                 .AESKey)
-                            result.messages[m].message = encrypted;
+                            data.messages[m].message = encrypted;
                         }
                         for (let m in data.mailContent) {
                             let decrypted = Crypto.AES.decrypt(data.mailContent[m], AESKey)
                             let encrypted = Crypto.AES.encrypt(decrypted, floGlobals.appendix
                                 .AESKey)
-                            result.mailContent[m] = encrypted;
+                            data.mailContent[m] = encrypted;
                         }
                     }
                     delete data.appendix.AESKey;
