@@ -184,7 +184,7 @@
             font: italic bold 1.5rem Georgia, serif;
         }
 
-        #sign-in-box input,
+        #sign-in-box input[type="password"],
         #sign-in-box button {
             margin: 1rem;
             padding: 0.5rem;
@@ -197,19 +197,23 @@
 
         }
 
-        #sign-in-box input,
+        #sign-in-box input[type="password"],
         #sign-in-box button:first-child {
             text-shadow: 0 0 0 var(--accent-dark);
             border-color: var(--accent-dark);
         }
 
-        #sign-in-box input {
+        #sign-in-box input[type="password"] {
             height: 2.5rem;
             width: 20rem;
         }
 
-        #sign-in-box input:focus {
+        #sign-in-box input[type="password"]:focus {
             box-shadow: -0.1rem -0.1rem var(--accent-dark)
+        }
+
+        #sign-in-box input[type="password"]::placeholder {
+            font-size: 1rem;
         }
 
         #sign-in-box button {
@@ -220,6 +224,17 @@
         #sign-in-box button:last-child {
             text-shadow: 0 0 0 var(--alt-dark);
             border-color: var(--alt-dark);
+        }
+
+        #sign-in-box input[type="button"] {
+            background: transparent;
+            border: none;
+            color: var(--alt-dark);
+            text-decoration: underline;
+        }
+
+        #sign-in-box input[type="button"]:hover {
+            color: var(--alt-color);
         }
 
         .loader {
@@ -1070,26 +1085,33 @@
         ]
         elementsToReset.forEach(e => clearElement(document.getElementById(e)))
         //set the custom Privkey input
-        floDapps.setCustomPrivKeyInput(() => {
+        floDapps.setCustomPrivKeyInput((type) => {
             return new Promise((resolve, reject) => {
-                let signInBox = document.getElementById("sign-in-box")
+                let signInBox = document.forms["sign-in-box"]
                 signInBox.classList.remove('hide')
-                let buttons = signInBox.getElementsByTagName('button');
-                buttons[0].onclick = () => {
-                    let keyInput = signInBox.getElementsByTagName('input')[0];
-                    let key = keyInput.value;
-                    keyInput.value = '';
-                    buttons[0].onclick = null;
-                    buttons[1].onclick = null;
+                signInBox["sign-in"].onclick = () => {
+                    let key = signInBox["key"].value;
+                    signInBox["key"].value = '';
+                    signInBox["sign-in"].onclick = null;
+                    signInBox["guest-login"].onclick = null;
                     signInBox.classList.add('hide')
                     resolve(key)
                 }
-                buttons[1].onclick = () => {
-                    signInBox.getElementsByTagName('input')[0].value = '';
-                    buttons[0].onclick = null;
-                    buttons[1].onclick = null;
-                    signInBox.classList.add('hide')
-                    reject(null)
+                if (type === "PRIVATE_KEY") {
+                    signInBox["key"].setAttribute("placeholder", "Private Key")
+                    signInBox["guest-login"].classList.remove("hide");
+                    signInBox["remove-account"].classList.add("hide");
+                    signInBox["guest-login"].onclick = () => {
+                        signInBox["key"].value = '';
+                        signInBox["sign-in"].onclick = null;
+                        signInBox["guest-login"].onclick = null;
+                        signInBox.classList.add('hide')
+                        reject(null)
+                    }
+                } else if (type === "PIN/Password") {
+                    signInBox["key"].setAttribute("placeholder", "Password")
+                    signInBox["guest-login"].classList.add("hide");
+                    signInBox["remove-account"].classList.remove("hide");
                 }
             })
         })
@@ -1170,15 +1192,16 @@
             <div></div>
             <div></div>
         </div>
-        <div id="sign-in-box" class="hide">
+        <form id="sign-in-box" onsubmit="return false;" class="hide">
             <div>
                 <div>
                     <span>SIGN IN</span>
                 </div>
-                <div><input type="password"></div>
-                <div><button>&#x1F511; Sign In</button><button>&#x1F464; Guest</button></div>
+                <div><input type="password" name="key"></div>
+                <div><button name="sign-in">&#x1F511; Sign In</button><button name="guest-login">&#x1F464; Guest</button></div>
+                <input type="button" name="remove-account" value="Remove Account"/>
             </div>
-        </div>
+        </form>
         <div id="startup-load-msg"></div>
     </div>
 
@@ -1232,6 +1255,9 @@
                 </div>
                 <div>
                     <input type="text" id="view-privkey" title="Click to Copy" placeholder="&#x25C9; View Private Key" readonly/>
+                    <input type="button" id="secure-key" value="&#x26BF; Secure Private Key" />
+                </div>
+                <div>
                     <input type="button" id="sign-out" value="&#x219A; Sign Out" />
                     <input type="button" id="clear-data" value="&#x2620; Clear Data" />
                 </div>
@@ -1243,6 +1269,21 @@
                 <fieldset>
                     <legend></legend>
                     <span></span>
+                    <div class="input-container i-2">
+                        <input type="submit" value="Ok" />
+                        <input type="reset" value="Cancel" />
+                    </div>
+                </fieldset>
+            </div>
+        </div>
+
+        <div class="popup-overlay hide">
+            <div id="prompt-input" class="popup-container">
+                <fieldset>
+                    <legend></legend>
+                    <div class="input-container i-1">
+                        <input type="text" placeholder="Value" />
+                    </div>
                     <div class="input-container i-2">
                         <input type="submit" value="Ok" />
                         <input type="reset" value="Cancel" />
@@ -1347,7 +1388,7 @@
                 floID = e.target.parentNode.getAttribute("name");
             let toInput = document.forms["new-mail-form"]["to"]
             let tmp = toInput.value.trim();
-            if(!tmp.includes(floID)){
+            if (!tmp.includes(floID)) {
                 if (tmp == '')
                     tmp = floID;
                 else
@@ -1360,23 +1401,42 @@
 
         document.getElementById("sign-out").addEventListener('click', function (e) {
             getConfirmation('Sign Out?',
-                '**Remember to store your PRIVATE-KEY** \nAre you sure you want to Sign out?', "Sign-Out", "Stay Signed-In").then(
+                '**Remember to store your PRIVATE-KEY** \nAre you sure you want to Sign out?', "Sign-Out",
+                "Stay Signed-In").then(
                 result => {
                     floDapps.logout().then(result => {
                         showMessage("Successfully Signed out")
-                        document.getElementById("settings-screen").parentNode.classList.add("hide");
                         setTimeout(onLoadStartUp, 2000)
-                    }).catch(error => showMessage(error, "error"))
+                    }).catch(error => showMessage("Signout Unsuccessful", "error", error))
                 }).catch(error => {})
+        });
+
+        document.forms["sign-in-box"]["remove-account"].addEventListener('click', function (e) {
+            getConfirmation('Remove Account?',
+                '**Remember to store your PRIVATE-KEY**\*Private-Key will be needed to signIn again*\nAre you sure you want to remove account?',
+                "Remove").then(result => {
+                floDapps.logout().then(result => {
+                    showMessage("Removed Account")
+                    setTimeout(onLoadStartUp, 2000)
+                }).catch(error => showMessage("Remove Unsuccessful", "error", error))
+            }).catch(error => {})
+        });
+
+        document.getElementById("secure-key").addEventListener('click', function (e) {
+            getPromptInput("Secure Private-Key", 'Enter Password', false).then(value => {
+                floDapps.securePrivKey(value)
+                    .then(result => showMessage("Private Key secured"))
+                    .catch(error => showMessage("Securing Failed", "error", error))
+            }).catch(error => {})
         });
 
         document.getElementById("clear-data").addEventListener('click', function (e) {
             getConfirmation('Clear Data?',
-                `Are you sure you want to clear stored data from the browser? \n**This can't be undone**\nMake sure you have stored the PRIVATE-KEY and Backuped the data.`, "Clear").then(
+                `Are you sure you want to clear stored data from the browser? \n**This can't be undone**\nMake sure you have stored the PRIVATE-KEY and Backuped the data.`,
+                "Clear").then(
                 result => {
                     floDapps.clearUserData().then(result => {
                         showMessage("Successfully Cleared local data")
-                        document.getElementById("settings-screen").parentNode.classList.add("hide");
                         setTimeout(onLoadStartUp, 2000)
                     }).catch(error => showMessage(error, "error"))
                 }).catch(error => {})
@@ -1407,15 +1467,15 @@
             document.getElementById("settings-screen").parentNode.classList.remove('hide')
         })
 
-        document.getElementById("view-privkey").addEventListener("mouseover", function(e){
+        document.getElementById("view-privkey").addEventListener("mouseover", function (e) {
             this.value = myPrivKey;
         })
 
-        document.getElementById("view-privkey").addEventListener("mouseout", function(e){
+        document.getElementById("view-privkey").addEventListener("mouseout", function (e) {
             this.value = "";
         });
 
-        document.getElementById("view-privkey").addEventListener("click", function(e){
+        document.getElementById("view-privkey").addEventListener("click", function (e) {
             this.select();
             this.setSelectionRange(0, 52);
             document.execCommand("copy");
@@ -1454,7 +1514,8 @@
             }
             messenger.parseBackup(file).then(data => {
                 getConfirmation('Restore Data?',
-                    `Found:\n ${Object.keys(data.contacts).length} Contacts,\n ${Object.keys(data.messages).length} Messages,\n ${Object.keys(data.mails).length} Mails\nRestore Data?`, "Restore"
+                    `Found:\n ${Object.keys(data.contacts).length} Contacts,\n ${Object.keys(data.messages).length} Messages,\n ${Object.keys(data.mails).length} Mails\nRestore Data?`,
+                    "Restore"
                 ).then(result => {
                     restoreInfoText.textContent = `Restoring data! Please wait...`;
                     messenger.restoreData(data).then(result => {
@@ -1505,7 +1566,7 @@
             confirmation.parentNode.classList.remove("hide");
             let options = confirmation.getElementsByTagName("input");
             options[0].value = trueBtn;
-            options[1].value = falseBtn; 
+            options[1].value = falseBtn;
             return new Promise((resolve, reject) => {
                 let interval = setInterval(() => {
                     if (confirmation.parentNode.classList.contains("hide")) {
@@ -1523,6 +1584,42 @@
                 options[1].onclick = () => {
                     clearInterval(interval);
                     confirmation.parentNode.classList.add("hide")
+                    reject(true)
+                }
+            })
+        }
+
+        function getPromptInput(title, message, showText = true, trueBtn = "Ok", falseBtn = "Cancel") {
+            let promptInput = document.getElementById("prompt-input");
+            promptInput.getElementsByTagName("legend")[0].textContent = title;
+            promptInput.parentNode.classList.remove("hide");
+            let inputs = promptInput.getElementsByTagName("input");
+            inputs[0].setAttribute("placeholder", message)
+            if (showText)
+                inputs[0].setAttribute("type", "text")
+            else
+                inputs[0].setAttribute("type", "password")
+            inputs[1].value = trueBtn;
+            inputs[2].value = falseBtn;
+            return new Promise((resolve, reject) => {
+                let interval = setInterval(() => {
+                    if (promptInput.parentNode.classList.contains("hide")) {
+                        inputs[1].onclick = null;
+                        inputs[2].onclick = null;
+                        clearInterval(interval);
+                        reject(false);
+                    }
+                }, 1000)
+                inputs[1].onclick = () => {
+                    clearInterval(interval);
+                    let value = inputs[0].value;
+                    inputs[0].value = '';
+                    promptInput.parentNode.classList.add("hide")
+                    resolve(value)
+                }
+                inputs[2].onclick = () => {
+                    clearInterval(interval);
+                    promptInput.parentNode.classList.add("hide")
                     reject(true)
                 }
             })
@@ -1602,8 +1699,8 @@
             getConversationElement(floID).appendChild(msgBox)
         }
 
-        function renderMarked(data){
-            for(let d in data){
+        function renderMarked(data) {
+            for (let d in data) {
                 let element = document.getElementsByName(d)[0]
                 data[d].forEach(mark => element.classList.add(mark))
             }
@@ -1668,7 +1765,7 @@
         }
 
         function renderMailList(mails, markUnread = true) {
-            for (m in mails){
+            for (m in mails) {
                 renderMailCard(mails[m].ref, mails[m].subject, mails[m].time, mails[m].category, mails[m].floID);
                 if (markUnread)
                     document.getElementsByName(mails[m].ref)[0].classList.add("unread");
@@ -1681,58 +1778,58 @@
                 clearElement(document.getElementById("mail-container")).parentNode.parentNode.classList.remove("hide");
 
             messenger.getMail(mailRef).then(result => {
-                    //create mail content
-                    let mailContent = document.createElement("div");
-                    mailContent.setAttribute("class", "mail-content");
-                    //add subject
-                    let subjectTag = document.createElement("span");
-                    subjectTag.textContent = result.subject;
-                    mailContent.appendChild(subjectTag);
-                    //add category
-                    let categoryTag = document.createElement("span");
-                    categoryTag.textContent = result.category;
-                    mailContent.appendChild(categoryTag);
-                    //add name (if available)  
-                    if (Array.isArray(result.floID))
-                        result.floID = result.floID.join(", ")
-                    let nameTag = document.createElement("span");
-                    nameTag.textContent = floGlobals.contacts[result.floID] || ' ';
-                    mailContent.appendChild(nameTag);
-                    //add floID
-                    let floIDTag = document.createElement("span");
-                    floIDTag.textContent = `<${result.floID}>`;
-                    mailContent.appendChild(floIDTag);
-                    //add data n time
-                    let timeTag = document.createElement("span");
-                    timeTag.textContent = new Date(result.time).toString().slice(4, 21);
-                    mailContent.appendChild(timeTag);
-                    //add mail content
-                    let contentTag = document.createElement("p");
-                    contentTag.textContent = result.content;
-                    mailContent.appendChild(contentTag);
-                    //append the contents to mail container
-                    document.getElementById("mail-container").appendChild(mailContent);
-                    //add prop for previous mail (if available)
-                    let prevMail = document.getElementById("prev-mail");
-                    prevMail.dataset["value"] = result.prevRef;
-                    prevMail.style.display = result.prevRef ? 'block' : 'none';
-                    //set values for reply mail form if new view
-                    if (newView) {
-                        if (result.floID.includes(','))
-                            document.getElementById("reply-mail").classList.add("hide");
-                        else {
-                            let replyForm = document.forms["reply-mail-form"];
-                            replyForm.reset();
-                            replyForm.dataset["to"] = result.floID;
-                            replyForm.dataset["prevRef"] = mailRef;
-                            replyForm["subject"].value = result.subject.startsWith("Re: ") ? result
-                                .subject : `Re: ${result.subject}`;
-                            document.getElementById("reply-mail").classList.remove("hide");
-                        }
+                //create mail content
+                let mailContent = document.createElement("div");
+                mailContent.setAttribute("class", "mail-content");
+                //add subject
+                let subjectTag = document.createElement("span");
+                subjectTag.textContent = result.subject;
+                mailContent.appendChild(subjectTag);
+                //add category
+                let categoryTag = document.createElement("span");
+                categoryTag.textContent = result.category;
+                mailContent.appendChild(categoryTag);
+                //add name (if available)  
+                if (Array.isArray(result.floID))
+                    result.floID = result.floID.join(", ")
+                let nameTag = document.createElement("span");
+                nameTag.textContent = floGlobals.contacts[result.floID] || ' ';
+                mailContent.appendChild(nameTag);
+                //add floID
+                let floIDTag = document.createElement("span");
+                floIDTag.textContent = `<${result.floID}>`;
+                mailContent.appendChild(floIDTag);
+                //add data n time
+                let timeTag = document.createElement("span");
+                timeTag.textContent = new Date(result.time).toString().slice(4, 21);
+                mailContent.appendChild(timeTag);
+                //add mail content
+                let contentTag = document.createElement("p");
+                contentTag.textContent = result.content;
+                mailContent.appendChild(contentTag);
+                //append the contents to mail container
+                document.getElementById("mail-container").appendChild(mailContent);
+                //add prop for previous mail (if available)
+                let prevMail = document.getElementById("prev-mail");
+                prevMail.dataset["value"] = result.prevRef;
+                prevMail.style.display = result.prevRef ? 'block' : 'none';
+                //set values for reply mail form if new view
+                if (newView) {
+                    if (result.floID.includes(','))
+                        document.getElementById("reply-mail").classList.add("hide");
+                    else {
+                        let replyForm = document.forms["reply-mail-form"];
+                        replyForm.reset();
+                        replyForm.dataset["to"] = result.floID;
+                        replyForm.dataset["prevRef"] = mailRef;
+                        replyForm["subject"].value = result.subject.startsWith("Re: ") ? result
+                            .subject : `Re: ${result.subject}`;
+                        document.getElementById("reply-mail").classList.remove("hide");
                     }
-                    document.getElementsByName(mailRef)[0].classList.remove("unread");
-                    messenger.removeMark(mailRef, "unread");
-                }).catch(error => showMessage("Unable to read mail", "error", error))
+                }
+                document.getElementsByName(mailRef)[0].classList.remove("unread");
+                messenger.removeMark(mailRef, "unread");
+            }).catch(error => showMessage("Unable to read mail", "error", error))
         }
 
         function sendMail() {
@@ -10118,16 +10215,6 @@ Bitcoin.Util = {
                 })
             },
 
-            privKeyInput: function () {
-                return new Promise((resolve, reject) => {
-                    var privKey = prompt("Enter Private Key: ")
-                    if (privKey === null)
-                        reject(null)
-                    else
-                        resolve(privKey)
-                })
-            },
-
             startUpFunctions: {
 
                 readSupernodeListFromAPI: function () {
@@ -10181,7 +10268,19 @@ Bitcoin.Util = {
 
                 getCredentials: function () {
 
-                    var readSharesFromIDB = function (indexArr) {
+                    const defaultInput = function (type) {
+                        return new Promise((resolve, reject) => {
+                            let inputVal = prompt(`Enter ${type}: `)
+                            if (inputVal === null)
+                                reject(null)
+                            else
+                                resolve(inputVal)
+                        })
+                    }
+
+                    const inputFn = this.getCredentials.privKeyInput || defaultInput;
+
+                    const readSharesFromIDB = function (indexArr) {
                         return new Promise((resolve, reject) => {
                             var promises = []
                             for (var i = 0; i < indexArr.length; i++)
@@ -10196,7 +10295,7 @@ Bitcoin.Util = {
                         })
                     }
 
-                    var writeSharesToIDB = function (shares, i = 0, resultIndexes = []) {
+                    const writeSharesToIDB = function (shares, i = 0, resultIndexes = []) {
                         return new Promise((resolve, reject) => {
                             if (i >= shares.length)
                                 return resolve(resultIndexes)
@@ -10212,17 +10311,16 @@ Bitcoin.Util = {
                         })
                     }
 
-                    var getPrivateKeyCredentials = function () {
+                    const getPrivateKeyCredentials = function () {
                         return new Promise((resolve, reject) => {
-                            var indexArr = localStorage.getItem(
-                                `${floGlobals.application}#privKey`)
+                            var indexArr = localStorage.getItem(`${floGlobals.application}#privKey`)
                             if (indexArr) {
                                 readSharesFromIDB(JSON.parse(indexArr))
                                     .then(result => resolve(result))
                                     .catch(error => reject(error))
                             } else {
                                 var privKey;
-                                floDapps.util.privKeyInput().then(result => {
+                                inputFn("PRIVATE_KEY").then(result => {
                                     try {
                                         if (!result)
                                             return reject("Empty Private Key")
@@ -10238,9 +10336,8 @@ Bitcoin.Util = {
                                     privKey = floCrypto.generateNewID().privKey
                                 }).finally(_ => {
                                     var threshold = floCrypto.randInt(10, 20)
-                                    writeSharesToIDB(floCrypto
-                                        .createShamirsSecretShares(
-                                            privKey, threshold, threshold)).then(
+                                    writeSharesToIDB(floCrypto.createShamirsSecretShares(
+                                        privKey, threshold, threshold)).then(
                                         resultIndexes => {
                                             //store index keys in localStorage
                                             localStorage.setItem(
@@ -10249,13 +10346,11 @@ Bitcoin.Util = {
                                             //also add a dummy privatekey to the IDB
                                             var randomPrivKey = floCrypto
                                                 .generateNewID().privKey
-                                            var randomThreshold = floCrypto.randInt(
-                                                10,
+                                            var randomThreshold = floCrypto.randInt(10,
                                                 20)
                                             writeSharesToIDB(floCrypto
                                                 .createShamirsSecretShares(
-                                                    randomPrivKey,
-                                                    randomThreshold,
+                                                    randomPrivKey, randomThreshold,
                                                     randomThreshold))
                                             //resolve private Key
                                             resolve(privKey)
@@ -10265,12 +10360,36 @@ Bitcoin.Util = {
                         })
                     }
 
+                    const checkIfPinRequired = function (key) {
+                        return new Promise((resolve, reject) => {
+                            if (key.length == 52)
+                                resolve(key)
+                            else {
+                                inputFn("PIN/Password").then(pwd => {
+                                    try {
+                                        let privKey = Crypto.AES.decrypt(key, pwd);
+                                        resolve(privKey)
+                                    } catch (error) {
+                                        reject("Access Denied: Incorrect PIN/Password")
+                                    }
+                                }).catch(error => reject(
+                                    "Access Denied: PIN/Password required"))
+                            }
+                        })
+                    }
+
                     return new Promise((resolve, reject) => {
-                        getPrivateKeyCredentials().then(privKey => {
-                            myPrivKey = privKey
-                            myPubKey = floCrypto.getPubKeyHex(myPrivKey)
-                            myFloID = floCrypto.getFloIDfromPubkeyHex(myPubKey)
-                            resolve('Login Credentials loaded successful')
+                        getPrivateKeyCredentials().then(key => {
+                            checkIfPinRequired(key).then(privKey => {
+                                try {
+                                    myPrivKey = privKey
+                                    myPubKey = floCrypto.getPubKeyHex(myPrivKey)
+                                    myFloID = floCrypto.getFloIDfromPubkeyHex(myPubKey)
+                                    resolve('Login Credentials loaded successful')
+                                } catch (error) {
+                                    reject("Corrupted Private Key")
+                                }
+                            }).catch(error => reject(error))
                         }).catch(error => reject(error))
                     })
                 }
@@ -10330,26 +10449,37 @@ Bitcoin.Util = {
         },
 
         setCustomPrivKeyInput: function (customFn) {
-            this.util.privKeyInput = customFn
+            this.util.startUpFunctions.getCredentials.privKeyInput = customFn
         },
 
         logout: function () {
             return new Promise((resolve, reject) => {
-                compactIDB.openDB(floGlobals.application).then(db => {
-                    var obs = db.transaction("credentials", "readwrite").objectStore(
-                        "credentials");
-                    let clearReq = obs.clear();
-                    clearReq.onsuccess = evt => {
-                        localStorage.removeItem(`${floGlobals.application}#privKey`);
-                        //clear memory data
-                        floGlobals.appendix = floGlobals.contacts = floGlobals.pubKeys =
-                            undefined;
-                        myPrivKey = myPubKey = myFloID = undefined;
-                        resolve(`Successfully logged out!`);
-                    };
-                    clearReq.onerror = evt => reject(evt.target.error);
-                })
+                compactIDB.clearData("credentials", floGlobals.application).then(result => {
+                    localStorage.removeItem(`${floGlobals.application}#privKey`);
+                    floGlobals.appendix = floGlobals.contacts = floGlobals.pubKeys = undefined;
+                    myPrivKey = myPubKey = myFloID = undefined;
+                    resolve(`Successfully logged out!`);
+                }).catch(error => reject(error))
             });
+        },
+
+        securePrivKey: function (pwd) {
+            return new Promise((resolve, reject) => {
+                let indexArr = localStorage.getItem(`${floGlobals.application}#privKey`)
+                if (!indexArr)
+                    return reject("PrivKey not found");
+                indexArr = JSON.parse(indexArr)
+                let encryptedKey = Crypto.AES.encrypt(myPrivKey, pwd);
+                let threshold = indexArr.length;
+                let shares = floCrypto.createShamirsSecretShares(encryptedKey, threshold, threshold)
+                let promises = [];
+                for (var i = 0; i < threshold; i++)
+                    promises.push(compactIDB.writeData("credentials", shares[i], indexArr[i], floGlobals
+                        .application));
+                Promise.all(promises)
+                    .then(results => resolve("Private Key Secured"))
+                    .catch(error => reject(error))
+            })
         },
 
         clearUserData: function () {
