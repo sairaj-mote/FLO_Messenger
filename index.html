@@ -1610,9 +1610,10 @@
                     content: Crypto.AES.encrypt(content, floGlobals.appendix.AESKey),
                     ref: mail.ref
                 }
-                compactIDB.addData("mails", data, `${data.time}`)
+                compactIDB.addData("mails", JSON.parse(JSON.stringify(data)) , `${data.time}`)
                 compactIDB.addData("mailRef", `${data.time}`, mail.ref)
                 result.data = data
+                result.data.content = content;
                 resolve(result)
             })
         },
@@ -1639,8 +1640,9 @@
                         content: Crypto.AES.encrypt(content,floGlobals.appendix.AESKey),
                         ref: mail.ref
                     }
-                    compactIDB.addData("mails", data, `${data.time}`)
+                    compactIDB.addData("mails", JSON.parse(JSON.stringify(data)), `${data.time}`)
                     compactIDB.addData("mailRef", `${data.time}`, mail.ref)
+                    data.content = content;
                     resolve(data)
                 } catch (error) {
                     reject(error)
@@ -1699,9 +1701,9 @@
                                 //process as message
                                 data.category = "received"
                                 data.message = Crypto.AES.encrypt(tmp, floGlobals.appendix.AESKey);
-                                newInbox.messages[vc] = data;
                                 compactIDB.addData("messages", JSON.parse(JSON.stringify(data)), vc)
                                 data.message = tmp;
+                                newInbox.messages[vc] = data;
                                 this.addMark(data.floID, "unread")
                             } else if (typeof tmp === "object") {
                                 //process as mail
@@ -1713,9 +1715,10 @@
                                     data.category = "replyFrom";
                                 } else
                                     data.category = "receivedFrom"
-                                newInbox.mails[vc] = data;
-                                compactIDB.addData("mails", data, vc);
+                                compactIDB.addData("mails", JSON.parse(JSON.stringify(data)), vc);
                                 compactIDB.addData("mailRef", vc, data.ref)
+                                data.content = tmp.content;
+                                newInbox.mails[vc] = data;
                                 this.addMark(data.ref, "unread")
                             }
                         } catch (error) {
