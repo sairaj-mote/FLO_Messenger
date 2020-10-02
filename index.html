@@ -6,7 +6,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FLO Messenger</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/dist/main.css">
+    <link rel="stylesheet" href="css/main.css">
     <script id="floGlobals">
 		/* Constants for FLO blockchain operations !!Make sure to add this at begining!! */
 		const floGlobals = {
@@ -490,7 +490,7 @@
 				<section id="chat_container" class="flex">
 				</section>
 				<footer class="flex">
-                    <sm-textarea id="type_message" placeholder="Type a message" class="rest"></sm-textarea>
+                    <sm-textarea id="type_message" placeholder="Type a message" class="rest round"></sm-textarea>
                     <sm-button variant="primary" class="round" id="send_message_button" disabled>
                         <svg class="icon" viewBox="-4 0 64 64">
                             <path d="M35.32,32.09,19.74,32a1.66,1.66,0,0,1-1.36-.82L.91,4.19c-1.15-1.78.31-4.36,2-3.53L31.63,14.78,62.37,29.9a2.51,2.51,0,0,1,0,4.2L31.63,49.22,2.92,63.34c-1.7.83-3.16-1.75-2-3.53L9.07,47.2"/>
@@ -628,7 +628,9 @@
             activeChat,
             activeMail,
             refreshCount = 0,
-            refreshTimeout = 20000;
+            refreshTimeout = 20000,
+            currentDate, 
+            currentFloID;
 
 
 		const	openSignInButton = document.getElementById('open_sign_in_button'),
@@ -679,11 +681,20 @@
                 let card = mailCardTemplate.content.cloneNode(true),
                     cardContainer = card.querySelector('.mail-card'),
                     time = new Date(timestamp).toString(),
-                    minutes = String(new Date(timestamp).getMinutes()),
+                    minutes = new Date(timestamp).getMinutes(),
                     hours = new Date(timestamp).getHours(),
                     dateTime
-                minutes = minutes.length === 1 ? `0${minutes}` : minutes  
-                let finalHours = hours - 12 > 0 ? `${hours - 12}:${minutes} pm` : `${hours}:${minutes} am`
+
+                minutes = minutes < 10 ? `0${minutes}` : minutes
+                let finalHours = ``;
+                if(hours > 12)
+                    finalHours = `${hours - 12}:${minutes}`
+                else if(hours === 0)
+                    finalHours = `12:${minutes}`
+                else
+                    finalHours = `${hours}:${minutes}`
+                
+                finalHours = hours >= 12 ? `${finalHours} pm` : `${finalHours} am`
 
                 if(new Date().getDate() === new Date(timestamp).getDate())
                     dateTime = finalHours
@@ -707,11 +718,20 @@
                 let card = mailTemplate.content.cloneNode(true),
                     cardContainer = card.querySelector('.mail'),
                     time = new Date(timestamp).toString(),
-                    minutes = String(new Date(timestamp).getMinutes()),
+                    minutes = new Date(timestamp).getMinutes(),
                     hours = new Date(timestamp).getHours(),
                     dateTime
-                minutes = minutes.length === 1 ? `0${minutes}` : minutes  
-                let finalHours = hours - 12 > 0 ? `${hours - 12}:${minutes} pm` : `${hours}:${minutes} am`
+
+                minutes = minutes < 10 ? `0${minutes}` : minutes
+                let finalHours = ``;
+                if(hours > 12)
+                    finalHours = `${hours - 12}:${minutes}`
+                else if(hours === 0)
+                    finalHours = `12:${minutes}`
+                else
+                    finalHours = `${hours}:${minutes}`
+                
+                finalHours = hours >= 12 ? `${finalHours} pm` : `${finalHours} am`
 
                 if(new Date().getDate() === new Date(timestamp).getDate())
                     dateTime = finalHours
@@ -746,35 +766,53 @@
                 contactsContainer.append(card);
                 mailContactList.append(duplicateCard);
             },
-            messageBubble(floID, message, timestamp, category){
+            messageBubble(floID, message, timestamp, category, unconfirmed = false){
                 let card = messageTemplate.content.cloneNode(true),
                     cardContainer = card.querySelector('.message'),
-                    time = new Date(timestamp).toString(),
-                    minutes = String(new Date(timestamp).getMinutes()),
-                    hours = new Date(timestamp).getHours(),
-                    year = new Date(timestamp).getFullYear()
-                minutes = minutes.length === 1 ? `0${minutes}` : minutes
-                let finalHours = hours - 12 > 0 ? `${hours - 12}:${minutes} pm` : `${hours}:${minutes} am`
+                    messageDateTIme = new Date(timestamp),
+                    time = messageDateTIme.toString(),
+                    minutes = messageDateTIme.getMinutes(),
+                    hours = messageDateTIme.getHours(),
+                    date = messageDateTIme.getDate(),
+                    month = messageDateTIme.getMonth(),
+                    year = messageDateTIme.getFullYear()
+                    
+                console.log(floID)
+
+                minutes = minutes < 10 ? `0${minutes}` : minutes
+                let finalHours = ``;
+                if(hours > 12)
+                    finalHours = `${hours - 12}:${minutes}`
+                else if(hours === 0)
+                    finalHours = `12:${minutes}`
+                else
+                    finalHours = `${hours}:${minutes}`
+                
+                finalHours = hours >= 12 ? `${finalHours} pm` : `${finalHours} am`
+                
+                cardContainer.id = `${floID}_${timestamp}`
+                if(unconfirmed)
+                    cardContainer.classList.add('unconfirmed')
 
                 cardContainer.classList.add(category)
                 cardContainer.children[0].textContent = message
                 cardContainer.children[1].textContent = finalHours
+                
                 if(currentFloID !== floID){
                     currentDate = null
                     currentFloID = floID
                 }
-                if(`${time.slice(4, 10)} ${year}` !== currentDate){
+
+                if(time.slice(4, 15) !== currentDate){
                     let dateCard = document.createElement('h5')
                     dateCard.classList.add('date-card')
                     dateCard.textContent = new Date().getFullYear() !== year ? `${time.slice(4, 10)} ${year}` : time.slice(4, 10)
                     getConversationElement(floID).appendChild(dateCard)
-                    currentDate = `${time.slice(4, 10)} ${year}`
+                    currentDate = time.slice(4, 15)
                 }
                 getConversationElement(floID).appendChild(card)
 			},
         }
-        
-        let currentDate, currentFloID
 
 		function randomHsl(saturation = 90, lightness = 50) {
             let hue = Math.random() * 360
@@ -1051,6 +1089,7 @@
 			if (e.target.closest(".mail-card") && e.target.closest(".mail-card") !== activeMail){
                 refresh()
                 mailPageButton.setAttribute('data-notifications', '0')
+                document.title = `FLO Messenger`
                 mailSection.classList.remove('hide-completely')
                 e.target.closest(".mail-card").classList.remove('unread')
                 viewMail(e.target.closest(".mail-card").getAttribute("name"));
@@ -1090,6 +1129,7 @@
 			if (!e.target.closest("sm-menu") && e.target.closest(".contact")){
                 refresh()
                 chatPageButton.setAttribute('data-notifications', '0')
+                document.title = `FLO Messenger`
                 chatSection.classList.remove('hide-completely')
                 e.target.closest(".contact").classList.remove('unread')
                 viewConversation(e.target.closest(".contact"))
@@ -1199,11 +1239,12 @@
                 renderMailList(data.mails)
                 if(Object.keys(data.messages).length && activePage.button !== chatPageButton){
                     chatPageButton.setAttribute('data-notifications', Object.keys(data.messages).length)
-                    notify(`${Object.keys(data.messages).length} new message(s)`)
+                    notify(`${Object.keys(data.messages).length} new message(s)`, '', '', true)
+                    document.title = `${Object.keys(data.messages).length} new message(s)`
                 }
                 if(Object.keys(data.mails).length && activePage.button !== mailPageButton){
                     mailPageButton.setAttribute('data-notifications', Object.keys(data.mails).length)
-                    notify(`${Object.keys(data.mails).length} new mail(s)`)
+                    notify(`${Object.keys(data.mails).length} new mail(s)`, '', '', true)
                 }
                 setTimeout(() => {
                     refreshing = false
@@ -1278,15 +1319,34 @@
             setTimeout(refreshAgain, refreshTimeout);
         }
 
+        function reOreder(topElement){
+            let cloneCard = topElement.cloneNode(true), currentIndex = 0;
+            for(child of contactsContainer.children) {
+                if(child.getAttribute('flo-id') === topElement.getAttribute('flo-id')){
+                    break
+                }
+                currentIndex++;
+            }
+            contactsContainer.children[currentIndex].remove()
+            contactsContainer.prepend(cloneCard)
+            activeChat = contactsContainer.firstElementChild
+            activeChat.classList.add('active')
+        }
+
         function sendMessage() {
-            let receiver = document.getElementById("receiver_floID").textContent;
-            let container;
-            let message = typeMessage.value;
+            let receiver = document.getElementById("receiver_floID").textContent,
+                message = typeMessage.value,
+                contactCard = document.querySelector(`[flo-id="${receiver}"]`)
+            if(contactsContainer.firstElementChild.getAttribute('flo-id') !== contactCard.getAttribute('flo-id'))
+                reOreder(contactCard)
+
 			typeMessage.value = ''
-			if(message.trim() === '') return
-            messenger.sendMessage(message, receiver).then(data => {
-                render.messageBubble(data.floID, data.message, data.time, data.category)
-                chatContainer.scrollTo({left: 0, top: chatContainer.scrollHeight, behavior: 'smooth'})
+            if(message.trim() === '') return
+            let time = Date.now()
+            render.messageBubble(receiver, message, time, 'sent', true)
+            chatContainer.scrollTo({left: 0, top: chatContainer.scrollHeight, behavior: 'smooth'})
+            messenger.sendMessage(time, message, receiver).then(data => {
+                document.getElementById(`${receiver}_${time}`).classList.remove('unconfirmed')
                 refreshCount = 0;
                 refreshTimeout = 10000;
                 setTimeout(refreshAgain, refreshTimeout)
@@ -1349,15 +1409,19 @@
             })
 		}
 		
-		const notifications = document.getElementById('notifications')
-
-		function notify(message, mode = "normal", log = "", pinned) {
+		const   notifications = document.getElementById('notifications'),
+                notificationSound = document.getElementById('notification_sound')
+		function notify(message, mode = "normal", log = "", pinned, sound) {
             if (mode === "error")
                 console.error(message, log)
             else if (mode === "warn")
                 console.warn(message, log)
             else
                 console.log(mode.toUpperCase(), message, log)
+            if (navigator.onLine && sound) {
+                notificationSound.currentTime = 0;
+                notificationSound.play();
+            }
 			notifications.push(message, mode, pinned)
         }
 
@@ -1425,11 +1489,12 @@
                 textColor = contact.getAttribute('text-color'),
                 backgroundColor = contact.getAttribute('background-color')
             let currentConversation = document.getElementById("receiver_floID").textContent;
-            console.log(floID, floGlobals.contacts[floID], currentConversation)
+
             if (currentConversation != "")
                 document.getElementById(currentConversation).classList.add('hide-completely')
             let currentChat = document.getElementById(floID)
             currentChat.classList.remove('hide-completely');
+            currentFloID = floID
             receiverInitial.textContent = floGlobals.contacts[floID] ? floGlobals.contacts[floID].charAt(0) : name.charAt(0) || ' ';
             receiverInitial.setAttribute('style', `color: ${textColor};`)
             receiverName.textContent = floGlobals.contacts[floID] || name || ' ';
@@ -1609,7 +1674,7 @@
 
         },
 
-        sendMessage(message, receiver) {
+        sendMessage(timestamp, message, receiver) {
             return new Promise(async (resolve, reject) => {
                 try {
                     if (receiver in floGlobals.pubKeys)
@@ -1617,7 +1682,7 @@
                     else
                         await this.util.sendEncoded(message, receiver);
                     let data = {
-                        time: Date.now(),
+                        time: timestamp,
                         floID: receiver,
                         category: "sent",
                         message: Crypto.AES.encrypt(message, floGlobals.appendix.AESKey)
@@ -1831,11 +1896,11 @@
         storeContact(floID, name) {
             return new Promise((resolve, reject) => {
                 if (!floCrypto.validateAddr(floID))
-                    reject("Invalid floID!")
-                else
-                    compactIDB.writeData("contacts", name, floID)
-                    .then(result => resolve(result))
-                    .catch(error => reject(error))
+                return reject("Invalid floID!")
+                compactIDB.writeData("contacts", name, floID).then(result => {
+                    floGlobals.contacts[floID] = name;
+                    resolve(result)
+                }).catch(error => reject(error))
             });
         },
 
@@ -1974,7 +2039,63 @@
                 }).catch(error => reject(error))
             })
         },
+        syncContact: {
+            oldDevice() {
+                return new Promise((resolve, reject) => {
+                    let contactList = {}
+                    for(let id in floGlobals.contacts){
+                        contactList[id] = {
+                            name: floGlobals.contacts[id]
+                        }
+                    }
+                    for(let id in floGlobals.pubKeys){
+                        if(id in contactList)
+                            contactList[id].pubKey = floGlobals.pubKeys[id]
+                    }
+                    console.log(contactList)
+                    let message = Crypto.AES.encrypt(JSON.stringify(contactList), myPrivKey)
+                    var data = {
+                        senderID: myFloID,
+                        receiverID: myFloID,
+                        pubKey: myPubKey,
+                        message: message,
+                        sign: floCrypto.signData(JSON.stringify(message), myPrivKey),
+                        application: "syncData",
+                        type: "Contacts",
+                        comment: ""
+                    }
+                    floSupernode.sendData(JSON.stringify(data), data.receiverID)
+                        .then(result => resolve(result))
+                        .catch(error => reject(error))
+                })
+            },
 
+            newDevice() {
+                return new Promise((resolve, reject) => {
+                    var request = {
+                        receiverID: myFloID,
+                        senderIDs: myFloID,
+                        application: "syncData",
+                        type: "Contacts",
+                        mostRecent: true,
+                    }
+                    floSupernode.requestData(JSON.stringify(request), request.receiverID).then(response => {
+                        response = JSON.parse(response)
+                        let vc = Object.keys(response).sort().pop()
+                        let contactList = JSON.parse(Crypto.AES.decrypt(response[vc].message, myPrivKey))
+                        let promises = []
+                        for(let id in contactList){
+                            promises.push(compactIDB.writeData("contacts", contactList[id].name, id))
+                            if(contactList[id].pubKey)
+                                promises.push(compactIDB.writeData("pubKeys", contactList[id].pubKey, id))
+                        }
+                        Promise.all(promises)
+                            .then(results => resolve("Sync contacts successful"))
+                            .catch(error => reject(error))
+                    }).catch(error => reject(error))
+                })
+            }
+        }
     }
 </script>
 </body>
